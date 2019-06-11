@@ -5,6 +5,7 @@
 
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: $light-gray3;
 }
 
 .root {
@@ -14,6 +15,7 @@ body {
 }
 
 .page {
+    background: white;
     max-width: 752px;
     margin: 0;
     padding: 0;
@@ -35,10 +37,10 @@ body {
         position: absolute;
         top: 0;
         left: 0;
-        background: url("../logo/1x/Artboard 1.png");
+        background: url("../logo/background.png");
         background-size: cover;
         filter: blur(0);
-        transition: 1.2s;
+        transition: 2s;
 
         transform: scale(1.01);
 
@@ -51,11 +53,47 @@ body {
         left: 0;
         width: 100%;
         height: 100%;
-        background: url("../logo/1x/Artboard 2.png");
+        background: url("../logo/background.png");
+        mask-image: url("../logo/text.png");
+        mask-size: cover;
         background-size: cover;
         overflow: hidden;
 
         transform: scale(1.01);
+    }
+    .header3 {
+        position: absolute;
+        opacity: 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("../logo/glow.png");
+        background-size: cover;
+        overflow: hidden;
+        transition: 5s cubic-bezier(0.19, 1, 0.22, 1);
+
+        transform: scale(1.01);
+    }
+}
+
+.title {
+    display: flex;
+    border: solid $gray2 1px;
+
+    div {
+        padding: 10px 20px;
+        border-right: solid black 1px;
+    }
+
+    .divider {
+        padding: 0px;
+        margin-left: auto;
+        content: " ";
+    }
+
+    div:last-child {
+        border-right: 0;
     }
 }
 
@@ -64,4 +102,13 @@ body {
     border-top: 0;
     margin: 0;
     padding: 10px;
+    text-align: justify;
+
+    pre {
+        margin: 10px -10px;
+        padding: 0px 10px;
+        border-top: 1px solid $gray2;
+        border-bottom: 1px solid $gray2;
+        background: $light-gray4;
+    }
 }

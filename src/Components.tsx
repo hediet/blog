@@ -12,24 +12,38 @@ import {
     action,
     transaction
 } from "mobx";
+import * as ReactMarkdown from "react-markdown";
+import * as foo from "../entries/hot-reload-for-vscode-extension-dev/index.md";
 
 const data = observable({
-    scrollY: 100
+    scrollY: 0,
+    mouseOver: false,
+    loading: true,
+    focus: true,
+    text: ""
 });
 
-setTimeout(() => {
-    data.scrollY = 0;
-}, 500);
+fetch(foo).then(async r => {
+    const t = await r.text();
+    data.text = t;
+});
 
 window.addEventListener("scroll", () => {
     data.scrollY = window.scrollY;
+});
+window.addEventListener("focus", () => {
+    data.focus = true;
+});
+window.addEventListener("blur", () => {
+    data.focus = false;
 });
 
 @observer
 export class GUI extends React.Component<{ model: Model }, {}> {
     @computed
     get blur(): number {
-        const b = Math.max(0, 3 - data.scrollY / 20);
+        if (data.loading || data.mouseOver || !data.focus) return 0;
+        const b = Math.max(0, 4 - data.scrollY / 20);
         console.log(b);
         return b;
     }
@@ -39,22 +53,48 @@ export class GUI extends React.Component<{ model: Model }, {}> {
         return (
             <div className="root">
                 <div className="page">
-                    <div className="header">
+                    <div
+                        className="header"
+                        onMouseOver={() => (data.mouseOver = true)}
+                        onMouseOut={() => (data.mouseOver = false)}
+                    >
                         <img
-                            src="../logo/1x/Artboard 1.png"
+                            src="../logo/background.png"
                             style={{ visibility: "hidden" }}
+                            onLoad={() => (data.loading = false)}
                         />
                         <div
                             className="header1"
                             style={{
-                                filter: `blur(${this.blur}px)`
+                                filter: `blur(${this.blur}px)`,
+                                transition: "2s"
                             }}
                         />
                         <div className="header2" />
+                        <div
+                            className="header3"
+                            style={{
+                                opacity: this.blur > 0 ? 1 : 0
+                            }}
+                        />
+                    </div>
+                    <div className="title">
+                        <div>Home</div>
+                        <div>About</div>
+                        <div className="divider" />
+                        <div>Github</div>
+                        <div>Twitter</div>
                     </div>
                     <div className="body">
-                        {loremIpsum()}
-                        {loremIpsum()}
+                        <img
+                            style={{
+                                width: "100%",
+                                border: "1px solid black",
+                                alignContent: "center"
+                            }}
+                            src="../entries/hot-reload-for-vscode-extension-dev/small.gif"
+                        />
+                        <ReactMarkdown source={data.text} />
                     </div>
                 </div>
             </div>
