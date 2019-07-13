@@ -1,0 +1,158 @@
+@import "~normalize.css";
+//@import "~@blueprintjs/core/lib/css/blueprint.css";
+//@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+@import "~@blueprintjs/core/lib/scss/variables";
+
+@import "./prism-vscode-light.css";
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: $light-gray3;
+}
+
+.root {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page {
+    background: white;
+    max-width: 752px;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    margin: 0;
+    padding: 0;
+    height: 250px;
+    position: relative;
+    overflow: hidden;
+
+    img {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        display: block;
+    }
+
+    div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scale(1.01);
+        background-size: cover;
+        overflow: hidden;
+    }
+
+    .header1 {
+        background-image: url("./logo/background.gif");
+        filter: blur(0);
+        transition: 2s;
+    }
+    .header2 {
+        background-image: url("./logo/background.gif");
+        -webkit-mask-image: url("./logo/text.png");
+        mask-image: url("./logo/text.png");
+        -webkit-mask-size: cover;
+        mask-size: cover;
+    }
+    .header3 {
+        opacity: 0;
+        background-image: url("./logo/glow.png");
+        transition: 5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+}
+
+.title {
+    display: flex;
+    border: solid $gray2 1px;
+
+    div,
+    a {
+        text-decoration: none;
+        color: black;
+        display: block;
+        padding: 10px 20px;
+
+        &:hover {
+            background: $light-gray3;
+        }
+
+        &.with-icon {
+            padding-left: 15px;
+
+            &:before {
+                content: "";
+                display: block;
+                width: 20px;
+                height: 20px;
+                float: left;
+                margin: 0 6px 0 0;
+            }
+            &.github:before {
+                background: url("./icons/github.svg") no-repeat;
+            }
+            &.twitter:before {
+                background: url("./icons/twitter-alt.svg") no-repeat;
+            }
+        }
+    }
+
+    .divider {
+        padding: 0px;
+        margin-left: auto;
+        content: " ";
+    }
+
+    div:last-child {
+        border-right: 0;
+    }
+}
+
+p {
+    line-height: 1.5em;
+}
+
+.body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol";
+
+    border: 1px solid $gray2;
+    border-top: 0;
+    margin: 0;
+    padding: 10px;
+    text-align: justify;
+
+    pre {
+        margin: 10px -10px !important;
+        padding: 0px 10px !important;
+        border-top: 1px solid $gray2;
+        border-bottom: 1px solid $gray2;
+
+        background: $light-gray4;
+    }
+
+    .inlineCode {
+        border-radius: 2px;
+        background: lighten(gray, 45%);
+        padding: 0px 5px;
+    }
+
+    h1 {
+        font-weight: 400;
+    }
+    h2 {
+        font-weight: 380;
+    }
+
+    img {
+        display: block;
+        margin: auto;
+        border: black solid 1px;
+    }
+}
