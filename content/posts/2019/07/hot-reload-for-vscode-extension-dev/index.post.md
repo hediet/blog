@@ -1,6 +1,6 @@
 ---
-title: Hot Reload for VS Code Extension Development
 date: 2019-06-30
+title: Hot Reload for VS Code Extension Development
 ---
 
 ![demo](./small.gif)

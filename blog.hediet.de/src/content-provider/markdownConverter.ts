@@ -7,26 +7,39 @@ import * as Prism from "prismjs";
 import * as mdfrontmatter from "remark-frontmatter";
 import * as yaml from "js-yaml";
 
+export interface MarkdownContext {
+    readonly basedir: string;
+}
+
 export function markdownStringToContent(
     markdown: string,
     context: MarkdownContext
-): Content {
+): { content: Content; date: Date; title: string } {
     const remark = remarkAbstract();
     const ast: Root = remark.use(mdfrontmatter).parse(markdown);
-    return markdownToContent(ast, context);
+    const c2: MarkdownContext2 = {
+        basedir: context.basedir,
+        date: undefined,
+        title: undefined
+    };
+    const content = markdownToContent(ast, c2);
+    return {
+        content,
+        date: c2.date!,
+        title: c2.title!
+    };
+}
+
+interface MarkdownContext2 extends MarkdownContext {
+    title: string | undefined;
+    date: Date | undefined;
 }
 
 type Narrow<T extends { type: string }, TId> = T extends { type: TId }
     ? T
     : never;
 
-export interface MarkdownContext {
-    readonly basedir: string;
-    setTitle(value: string): void;
-    setDate(date: Date): void;
-}
-
-function mapArray(items: Item[], context: MarkdownContext): Content {
+function mapArray(items: Item[], context: MarkdownContext2): Content {
     return {
         kind: "list",
         items: items.map(i => markdownToContent(i, context))
@@ -35,7 +48,7 @@ function mapArray(items: Item[], context: MarkdownContext): Content {
 
 function markdownToContent(
     node: Item | Root,
-    context: MarkdownContext
+    context: MarkdownContext2
 ): Content {
     const handlers: {
         [TKey in (Item | Root)["type"]]: (
@@ -92,18 +105,24 @@ function markdownToContent(
                 title: string;
                 date: string;
             };
-            context.setTitle(doc.title);
-            context.setDate(new Date(doc.date));
+            if (doc.title) {
+                context.title = doc.title;
+            }
+            if (doc.date) {
+                context.date = new Date(doc.date);
+            }
             return {
                 kind: "list",
                 items: []
             };
         },
-        heading: item => ({
-            kind: "heading",
-            depth: item.depth,
-            body: mapArray(item.children, context)
-        }),
+        heading: item => {
+            return {
+                kind: "heading",
+                depth: item.depth,
+                body: mapArray(item.children, context)
+            };
+        },
         image: item => ({
             kind: "image",
             asset: new CompiletimeAsset(join(context.basedir, item.url))

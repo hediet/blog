@@ -12,7 +12,60 @@ export type Content =
     | { kind: "heading"; depth: number; body: Content }
     | { kind: "inlineCode"; code: string }
     | { kind: "code"; /*code: string;*/ lang: string; html: string }
-    | { kind: "image"; asset: Asset };
+    | { kind: "image"; asset: Asset }
+    | { kind: "badge"; text: string };
+
+export function preview(content: Content): Content {
+    return generatePreview(content, { availableWordCount: 70 });
+}
+
+function generatePreview(
+    content: Content,
+    context: { availableWordCount: number }
+): Content {
+    if (context.availableWordCount === 0) {
+        return { kind: "list", items: [] };
+    }
+
+    const handlers: {
+        [TKey in Content["kind"]]: (content: Narrow<Content, TKey>) => Content
+    } = {
+        list: c => ({
+            kind: "list",
+            items: c.items.map(i => generatePreview(i, context))
+        }),
+        emphasis: c => c,
+        strong: c => c,
+        paragraph: c => generatePreview(c.body, context),
+        text: c => {
+            const words = c.value.split(/\s/);
+            words.length = Math.min(words.length, context.availableWordCount);
+            context.availableWordCount -= words.length;
+            return text(words.join(" "));
+        },
+        heading: c => {
+            context.availableWordCount = 0;
+            return { kind: "list", items: [] };
+        },
+        inlineCode: c => {
+            context.availableWordCount = Math.max(
+                0,
+                context.availableWordCount - 2
+            );
+            return c;
+        },
+        image: c => ({ kind: "badge", text: "Image" }),
+        code: c => ({ kind: "badge", text: "Code" }),
+        badge: c => c
+    };
+
+    const h = handlers[content.kind];
+    if (!h) {
+        console.log(toJS(content));
+        throw new Error(`No handler for "${content.kind}".`);
+    }
+    return h(content as any);
+}
 
 export function text(value: string): Content {
     return {
@@ -37,7 +90,11 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
             content: Narrow<Content, TKey>
         ) => React.ReactElement
     } = {
-        list: c => <div key={key}>{c.items.map(renderContent)}</div>,
+        list: c => (
+            <React.Fragment key={key}>
+                {c.items.map(renderContent)}{" "}
+            </React.Fragment>
+        ),
         emphasis: c => <i key={key}>{renderContent(c.body)}</i>,
         strong: c => <b key={key}>{renderContent(c.body)}</b>,
         paragraph: c => <p key={key}>{renderContent(c.body)}</p>,
@@ -59,7 +116,8 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
                     dangerouslySetInnerHTML={{ __html: c.html }}
                 />
             </pre>
-        )
+        ),
+        badge: c => <span className="badge">{c.text}</span>
     };
 
     const h = handlers[content.kind];

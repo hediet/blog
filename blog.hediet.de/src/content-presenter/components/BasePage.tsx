@@ -72,7 +72,7 @@ export class BasePage extends React.Component<
                         />
                     </div>
                     <div className="title">
-                        <Link to={this.props.index}>Home</Link>
+                        <Link to={this.props.index}>Blog</Link>
                         <div>About</div>
                         <div className="divider" />
 

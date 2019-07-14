@@ -6,6 +6,7 @@ import { Content, ContentRenderer } from "../components/Content";
 export type BlogPost = {
     title: string;
     content: Content;
+    date: string;
 };
 
 export class BlogPage extends PageWithRouter<{
@@ -22,6 +23,13 @@ export class BlogPage extends PageWithRouter<{
         return (
             <BasePage {...this.data.baseData}>
                 <h1>{this.data.post.title}</h1>
+                <div className="date">
+                    {new Date(this.data.post.date).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        year: "numeric",
+                        month: "short"
+                    })}
+                </div>
                 <ContentRenderer content={this.data.post.content} />
             </BasePage>
         );

@@ -15,7 +15,11 @@ import {
 import { readFileSync } from "fs";
 import "ignore-styles";
 import { dirname, join } from "path";
-import { Content, text } from "../content-presenter/components/Content";
+import {
+    Content,
+    text,
+    preview
+} from "../content-presenter/components/Content";
 import { BlogPage } from "../content-presenter/pages/BlogPage";
 import { MainPage } from "../content-presenter/pages/MainPage";
 import { MonacoPage } from "../content-presenter/pages/MonacoPage";
@@ -61,6 +65,8 @@ export function getPages(): Route[] {
                 },
                 recentPosts: blogPosts.map(p => ({
                     title: p.title,
+                    date: p.date.toString(),
+                    preview: preview(p.content),
                     ref: blogPostPath(p.id).ref()
                 }))
             })
@@ -75,7 +81,8 @@ export function getPages(): Route[] {
                         },
                         post: {
                             title: p.title,
-                            content: p.content
+                            content: p.content,
+                            date: p.date.toString()
                         }
                     })
                 )
@@ -99,6 +106,7 @@ function getPosts(): Post[] {
     const posts = glob.sync("**/*.post.md", {
         cwd
     });
+    // aa
     return posts.map(filename => {
         return parsePost(join(cwd, filename));
     });
@@ -106,25 +114,9 @@ function getPosts(): Post[] {
 
 function parsePost(markdownFile: string): Post {
     const markdown = readFileSync(markdownFile, { encoding: "utf8" });
-    let date: Date | undefined;
-    let title: string | undefined;
-    const content = markdownStringToContent(markdown, {
-        basedir: dirname(markdownFile),
-        setDate(d) {
-            date = d;
-        },
-        setTitle(t) {
-            title = t;
-        }
+    const { content, date, title } = markdownStringToContent(markdown, {
+        basedir: dirname(markdownFile)
     });
-
-    if (!date) {
-        throw new Error("Post without date");
-    }
-    if (!title) {
-        throw new Error("Post without title");
-    }
-
     const id = title.toLowerCase().replace(/\s/g, "_");
 
     return {
