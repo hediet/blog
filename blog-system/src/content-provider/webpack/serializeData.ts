@@ -1,10 +1,11 @@
-import { Data, Asset, CompiletimeAsset, RuntimeAsset } from "../Data";
-import { RouteRef, RouteIndexProvider } from "..";
-import { DetailedRoutes, classExpression } from "./WebpackConfigBuilder";
+import { Data, CompiletimeAsset, RuntimeAsset } from "../../Data";
+import { RouteRef, RouteIndexProvider } from "../..";
+import { RoutesWithModules } from "./RoutesWithModules";
+import { classExpression } from "./utils";
 
 export function serializeData(
     obj: Data,
-    routes: DetailedRoutes | null
+    routes: RoutesWithModules | null
 ): string {
     if (
         typeof obj === "boolean" ||

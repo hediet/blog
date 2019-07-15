@@ -2,6 +2,8 @@ import { Page } from "../page";
 import { Path } from "../path";
 import { observable, action } from "mobx";
 
+export { WebpackConfigBuilder } from "./webpack/WebpackConfigBuilder";
+
 export interface WebsiteContentProvider {
     getPages(): Promise<Routes>;
 }
@@ -44,5 +46,3 @@ export class DynamicRoute extends Route {
         this._page = page;
     }
 }
-
-export { WebpackConfigBuilder } from "./WebpackConfigBuilder";
