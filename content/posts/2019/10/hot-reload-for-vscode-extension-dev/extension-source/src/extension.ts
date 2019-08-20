@@ -7,7 +7,9 @@ import {
 import { Disposable } from "@hediet/std/disposable";
 import * as vscode from "vscode";
 
-enableHotReload({ entryModule: module });
+if (process.env.NODE_ENV === "development") {
+    enableHotReload({ entryModule: module });
+}
 registerUpdateReconciler(module);
 
 export function activate(context: vscode.ExtensionContext) {

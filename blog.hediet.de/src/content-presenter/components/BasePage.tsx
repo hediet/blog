@@ -5,6 +5,7 @@ import * as React from "react";
 import classnames = require("classnames");
 import "../assets/style.scss";
 import { RouteRef, Link } from "@hediet/static-page";
+import classNames = require("classnames");
 
 export type BaseData = {
     index: RouteRef;
@@ -14,9 +15,13 @@ export type BaseData = {
 export class BasePage extends React.Component<
     {
         children: React.ReactNode;
+        fullscreenShare?: number; // between 0 and 1
     } & BaseData
 > {
-    @observable private scrollY = 0;
+    @observable public scrollY = 0;
+    get scrollYMax() {
+        return document.body.offsetHeight - window.innerHeight;
+    }
     @observable private mouseOver = false;
     @observable private focus = true;
     @observable private loading = true;
@@ -45,7 +50,14 @@ export class BasePage extends React.Component<
     render() {
         return (
             <div className="root">
-                <div className="page">
+                <div
+                    className={"page"}
+                    style={{
+                        maxWidth:
+                            752 +
+                            (this.props.fullscreenShare || 0) * (1800 - 752)
+                    }}
+                >
                     <div
                         className="header"
                         onMouseOver={() => (this.mouseOver = true)}
@@ -73,7 +85,7 @@ export class BasePage extends React.Component<
                     </div>
                     <div className="title">
                         <Link to={this.props.index}>Blog</Link>
-                        <div>About</div>
+                        <div>Projects</div>
                         <div className="divider" />
 
                         <a

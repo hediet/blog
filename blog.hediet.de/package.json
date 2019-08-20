@@ -6,6 +6,7 @@
     },
     "dependencies": {
         "@blueprintjs/core": "^3.15.1",
+        "@blueprintjs/select": "^3.10.0",
         "@hediet/node-reload": "^0.7.0",
         "@hediet/std": "0.6.0",
         "@types/classnames": "^2.2.8",

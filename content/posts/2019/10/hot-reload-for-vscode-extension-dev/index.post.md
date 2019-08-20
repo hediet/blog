@@ -1,12 +1,14 @@
 ---
-date: 2019-06-30
+date: 2019-10-02
 title: Hot Reload for VS Code Extension Development
 ---
 
 ![demo](./small.gif)
 
 Ever wanted to iteratively tweak your VS Code extension but got annoyed
-on how long it takes to iterate? Then check out `@hediet/node-reload` to speed things up!
+on how long it takes to try things out? Then check out `@hediet/node-reload` to
+immediately apply your code changes to your running extension
+and speed up your development workflow!
 
 ## Setting up a new VS Code Extension
 
@@ -16,35 +18,39 @@ Create a new (preferrably TypeScript) extension for vscode with `yo`:
 yo code
 ```
 
-Then install `@hediet/node-reload` and `@hediet/std`:
+Then add a dependency to `@hediet/node-reload` and `@hediet/std`:
 
 ```sh
 yarn add @hediet/node-reload @hediet/std
 ```
 
 Delete everything inside `src` and create an empty `extension.ts`.
-For demoing add `"*"` to the `activationEvents` in `package.json` so that the extension gets loaded at startup. This is not considered good practice for production as it slows down VS Code if too many extension are loaded when VS Code starts.
+For prototyping add `"*"` to the `activationEvents` in `package.json` so that the extension gets loaded at startup. This is not considered good practice for production as it slows down VS Code if too many extension are loaded when VS Code starts.
 
 ## Simple Hot Reload with `hotRequire`
 
 In the simplest scenario, the hot reload logic is put into `extension.ts` (which is loaded by VS Code)
 while the actual extension code lives in `logic.ts`.
+The hot reload logic watches loaded modules for changes and reloads them when they change.
 
 `hotRequire` can be used to require a file and get notified when it changes.
 For `hotRequire` to watch for changes, `enableHotReload` must be called before.
 Since our extension is not the entry module of the process,
-we should specify `entryModule` - otherwise other VS Code extension are watched for changes too.
+we must set our extension module as `entryModule`.
+Only direct dependencies of watched modules and the entry module are also watched.
 
 ```ts
 // extension.ts
 import { enableHotReload, hotRequire } from "@hediet/node-reload";
 
-// TODO don't call `enableHotReload` on production
-enableHotReload({ entryModule: module });
+if (process.env.NODE_ENV === "development") {
+    // only activate hot reload while developing the extension
+    enableHotReload({ entryModule: module });
+}
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
-        // hotRequire returns a Disposable
+        // `hotRequire` returns a Disposable
         // that disposes the last returned instance
         // and makes it stop watching.
         hotRequire<typeof import("./logic")>(module, "./logic", logic => {
@@ -129,18 +135,25 @@ In addition to `enableHotReload`, `registerUpdateReconciler` must be called to s
 // ...
 
 enableHotReload({ entryModule: module });
+// Accepts and loads new module versions and updates all `hotRequireExportedFn` invocations.
 registerUpdateReconciler(module);
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         hotRequireExportedFn(
+            // The module the function is exported.
             module,
+            // The exported item.
+            // Must be exported in `module` at `MyExtension.name`.
             MyExtension,
+            // Creates a new `MyExtension` when ever a new module version is loaded.
+            // Old instances are disposed before.
             MyExtension => new MyExtension()
         )
     );
 }
 
+// Must be exported as `MyExtension`
 export class MyExtension {
     dispose = Disposable.fn();
     constructor() {

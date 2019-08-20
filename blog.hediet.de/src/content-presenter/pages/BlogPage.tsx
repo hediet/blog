@@ -1,7 +1,12 @@
 import React = require("react");
-import { BasePage, BaseData } from "../components/BasePage";
 import { PageWithRouter } from "@hediet/static-page";
-import { Content, ContentRenderer } from "../components/Content";
+import {
+    BlogDate,
+    Content,
+    BaseData,
+    BasePage,
+    ContentRenderer
+} from "../components";
 
 export type BlogPost = {
     title: string;
@@ -23,13 +28,7 @@ export class BlogPage extends PageWithRouter<{
         return (
             <BasePage {...this.data.baseData}>
                 <h1>{this.data.post.title}</h1>
-                <div className="date">
-                    {new Date(this.data.post.date).toLocaleDateString("en-US", {
-                        day: "numeric",
-                        year: "numeric",
-                        month: "short"
-                    })}
-                </div>
+                <BlogDate date={new Date(this.data.post.date)} />
                 <ContentRenderer content={this.data.post.content} />
             </BasePage>
         );

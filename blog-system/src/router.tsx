@@ -27,12 +27,16 @@ export class ReactRouter extends React.Component<ReactRouterProps>
 
         if (!history.state) {
             const r = props.initialRef;
-            history.replaceState(r.serialize(), "test", r.getUrl());
+            history.replaceState(
+                r.serialize(),
+                props.initialPage.title,
+                r.getUrl() + window.location.hash
+            );
         }
 
         window.addEventListener("popstate", async ev => {
             if (!ev.state) {
-                throw new Error("should not happen!");
+                return;
             }
 
             const ref = RouteRef.deserialize(
@@ -47,7 +51,7 @@ export class ReactRouter extends React.Component<ReactRouterProps>
     async navigateTo(ref: RouteRef): Promise<void> {
         const page = await ref.loadPage();
         this.currentPage = page;
-        history.pushState(ref.serialize(), "test", ref.getUrl());
+        history.pushState(ref.serialize(), page.title, ref.getUrl());
     }
 
     render(): React.ReactElement {

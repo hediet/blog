@@ -5,7 +5,7 @@ import {
 } from "@hediet/node-reload";
 enableHotReload({ entryModule: module });
 
-import { Path, path } from "@hediet/static-page";
+import { Path, path, Page } from "@hediet/static-page";
 import {
     DynamicRoutes,
     Route,
@@ -25,6 +25,8 @@ import { MainPage } from "../content-presenter/pages/MainPage";
 import { MonacoPage } from "../content-presenter/pages/MonacoPage";
 import { markdownStringToContent } from "./markdownConverter";
 import * as glob from "glob";
+import { BlogPageConstructor } from "./BlogPageConstructor";
+import { BaseData } from "../content-presenter/components";
 
 registerUpdateReconciler(module);
 
@@ -66,7 +68,7 @@ export function getPages(): Route[] {
                 recentPosts: blogPosts.map(p => ({
                     title: p.title,
                     date: p.date.toString(),
-                    preview: preview(p.content),
+                    preview: p.preview,
                     ref: blogPostPath(p.id).ref()
                 }))
             })
@@ -75,15 +77,8 @@ export function getPages(): Route[] {
             p =>
                 new Route(
                     blogPostPath(p.id),
-                    new BlogPage({
-                        baseData: {
-                            index: path.default.ref()
-                        },
-                        post: {
-                            title: p.title,
-                            content: p.content,
-                            date: p.date.toString()
-                        }
+                    p.createPage({
+                        index: path.default.ref()
                     })
                 )
         )
@@ -98,29 +93,64 @@ interface Post {
     id: string;
     date: Date;
     title: string;
-    content: Content;
+    preview: Content;
+    createPage(baseData: BaseData): Page;
 }
 
 function getPosts(): Post[] {
     const cwd = join(__dirname, "../../../content/posts");
-    const posts = glob.sync("**/*.post.md", {
+    const posts = glob.sync("**/*.post.*", {
         cwd
     });
-    // aa
-    return posts.map(filename => {
-        return parsePost(join(cwd, filename));
+
+    const parsedPosts = posts.map(filename => {
+        const fullFilename = join(cwd, filename);
+        if (filename.endsWith(".tsx")) {
+            const page = require(fullFilename).default as BlogPageConstructor;
+            const id = titleToId(page.title);
+            const p: Post = {
+                id,
+                title: page.title,
+                date: page.date,
+                preview: page.preview,
+                createPage(baseData) {
+                    return page.createPage(baseData);
+                }
+            };
+            return p;
+        } else {
+            return parseMarkdownPost(fullFilename);
+        }
     });
+
+    parsedPosts.sort((a, b) => b.date.getTime() - a.date.getTime());
+    return parsedPosts;
 }
 
-function parsePost(markdownFile: string): Post {
+function titleToId(title: string): string {
+    return title.toLowerCase().replace(/\s/g, "_");
+}
+
+function parseMarkdownPost(markdownFile: string): Post {
     const markdown = readFileSync(markdownFile, { encoding: "utf8" });
     const { content, date, title } = markdownStringToContent(markdown, {
         basedir: dirname(markdownFile)
     });
-    const id = title.toLowerCase().replace(/\s/g, "_");
+    const id = titleToId(title);
 
     return {
-        content,
+        createPage: baseData =>
+            new BlogPage({
+                baseData,
+                post: {
+                    title,
+                    content,
+                    date: date.toString()
+                }
+            }),
+        get preview() {
+            return preview(content);
+        },
         date,
         title,
         id

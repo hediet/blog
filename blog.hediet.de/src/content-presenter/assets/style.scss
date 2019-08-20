@@ -1,13 +1,13 @@
 @import "~normalize.css";
-//@import "~@blueprintjs/core/lib/css/blueprint.css";
-//@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+@import "~@blueprintjs/core/lib/css/blueprint.css";
+@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "~@blueprintjs/core/lib/scss/variables";
-
 @import "./prism-vscode-light.css";
 
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: $light-gray3;
+    font-size: 16px;
 }
 
 .root {
@@ -18,9 +18,10 @@ body {
 
 .page {
     background: white;
-    max-width: 752px;
     margin: 0;
     padding: 0;
+    transition: max-width 0.5s;
+    width: 100%;
 }
 
 .header {
@@ -134,7 +135,7 @@ body {
     }
 }
 
-.date {
+.component-BlogDate {
     text-transform: uppercase;
     font-size: 80%;
 }
@@ -187,6 +188,7 @@ body {
     img {
         display: block;
         margin: auto;
-        border: black solid 1px;
+        border: gray solid 1px;
+        max-width: 100%;
     }
 }

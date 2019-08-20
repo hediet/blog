@@ -1,5 +1,5 @@
 ---
-date: 2019-07-02
+date: 2019-10-04
 title: The Disposable Pattern in TypeScript
 ---
 
@@ -13,13 +13,13 @@ This principle is adopted for own code too, which often results in something sim
 ```ts
 class MyClass {
     private handle: number;
-    start() {
+    public start(): void {
         this.handle = setInterval(() => {
             // ...
         }, 1000);
     }
 
-    stop() {
+    public stop(): void {
         clearInterval(this.handle);
     }
 }
@@ -27,13 +27,13 @@ class MyClass {
 class MyService {
     private myClass = new MyClass();
 
-    public foo() {
+    public foo(): void {
         // ...
         this.myClass.start();
         // ...
     }
 
-    public bar() {
+    public bar(): void {
         // ...
         this.myClass.stop();
         // ...
@@ -57,11 +57,11 @@ you would think of `MyClass` as something that composes an interval component.
 The idea of components is that they have a specific lifetime that starts on construction and ends on destruction.
 When modeling components in JS with classes,
 the `constructor` marks the beginning of the lifetime.
-As JS classes have no destructors, a method named `dispose` is used to
+As JS classes have no destructors, a method named `dispose` is commonly used to
 mark the end of a component's lifetime.
 
 This is how `MyClass` would be implemented when thinking in components.
-Rather than starting an interval here, we now compose a new interval.
+Rather than starting an interval, we now compose a new interval.
 The effect is the same, but the meaning is different:
 
 ```ts
@@ -74,7 +74,7 @@ class MyClass {
         }, 1000);
     }
 
-    dispose() {
+    public dispose(): void {
         this.timer.dispose();
     }
 }
@@ -96,13 +96,13 @@ class MyClass {
         );
     }
 
-    dispose() {
+    public dispose(): void {
         this.disposer.dispose();
     }
 }
 ```
 
-When `disposer` would dispose all its tracked components when called as method, it could be used directly as the `dispose` method, make the code even shorter:
+When `disposer` would dispose all its tracked components when called as method, it could be used directly as the `dispose` method, making the code even shorter:
 
 ```ts
 class MyClass {
@@ -118,7 +118,10 @@ class MyClass {
 }
 ```
 
-If implemented like this, it becomes clear that `MyService`
+The downside of using such a function `Disposable.fn` in the presented way is
+that it publicly exposes its API to track and untrack disposables.
+
+If implemented with components in mind, it becomes now clear that `MyService`
 composes zero or one instances of `MyClass`:
 
 ```ts
