@@ -1,10 +1,10 @@
 ---
 date: 2019-10-01
 title: Hello World
+github: { org: "hediet", repo: "blog" }
 ---
 
 After some long nights I finally published my very own blog!
-
 I will mainly use this blog to write about TypeScript,
 my own projects and other cool programming related stuff.
 
@@ -16,6 +16,6 @@ This gives code splitting, hot reload and lazy loading for free.
 Markdown is parsed using `remark` during compile time.
 Referenced images are bundled using webpack's file loader plugin.
 
-```dot
-oo -> fo
-```
+I decided against ready-to-use solutions like next.js
+as they don't work that well with TypeScript and
+I wanted to create something I fully control.

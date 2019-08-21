@@ -133,7 +133,7 @@ function titleToId(title: string): string {
 
 function parseMarkdownPost(markdownFile: string): Post {
     const markdown = readFileSync(markdownFile, { encoding: "utf8" });
-    const { content, date, title } = markdownStringToContent(markdown, {
+    const { content, date, title, meta } = markdownStringToContent(markdown, {
         basedir: dirname(markdownFile)
     });
     const id = titleToId(title);
@@ -145,7 +145,8 @@ function parseMarkdownPost(markdownFile: string): Post {
                 post: {
                     title,
                     content,
-                    date: date.toString()
+                    date: date.toString(),
+                    github: meta.github as any
                 }
             }),
         get preview() {

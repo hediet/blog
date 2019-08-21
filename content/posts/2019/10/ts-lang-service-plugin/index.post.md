@@ -3,8 +3,8 @@ date: 2019-10-10
 title: Implementing TypeScript Refactorings With Hot Reloading
 ---
 
-This post is about how to implement a simple refactoring for TypesScript as a language service plugin.
-It features
+This post is about how to implement a simple refactoring for TypesScript as a language service plugin that can be used in VS Code.
+It showcases modern development techniques like hot reloading, test driven development and syntax tree visualizations in VS Code.
 
 ## Goal
 
@@ -14,14 +14,15 @@ The goal of this post is to implement a refactoring that can convert from manual
 
 ```ts
 format("Hello " + name);
-// --- Refactor "Convert to template string" --->
+
+// After applying "Convert to template string":
 format(`Hello ${name}`);
 ```
 
-## Figuring out how to write a language service plugin
+## Figuring out how to write a Language Service Plugin
 
 I used [Writing a Language Service Plugin](https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin) as a starting point for a language service plugin.
-With the help of autocompletion, I soon spotted `getApplicableRefactors` and `getEditsForRefactor` as the two functions to override for custom refactorings.
+With the help of autocompletion, I soon spotted `getApplicableRefactors` and `getEditsForRefactor` as the two functions of the language service to decorate for custom refactorings.
 
 By using `getProgram` of the underlying lanugage service, the plugin can access the current syntax tree and the type checker.
 
@@ -80,7 +81,7 @@ export class RefactoringLanguageService {
         positionOrRange: number | ts.TextRange,
         preferences: ts.UserPreferences | undefined
     ): ts.ApplicableRefactorInfo[] {
-        const p = base.getProgram();
+        const p = this.base.getProgram();
         // todo
     }
 
@@ -92,13 +93,13 @@ export class RefactoringLanguageService {
         actionName: string,
         preferences: ts.UserPreferences | undefined
     ): ts.RefactorEditInfo | undefined {
-        const p = base.getProgram();
+        const p = this.base.getProgram();
         // todo
     }
 }
 ```
 
-## Figuring out how to test the plugin
+## Setting up Test and Debugging Environments
 
 When programming against a very large and not very well documented API such as TypeScripts compiler API,
 it is important to be able to test things quickly. Besides, it is very useful to have an easy way to attach a debugger.
@@ -119,32 +120,64 @@ import {
     refactoringName
 } from "../src/RefactoringLanguageService";
 
-describe("Refactoring", () => {
-    it("should refactor correctly", async () => {
-        const action = {
-            refactoringName,
-            actionName: convertStringConcatenationToStringTemplate
-        };
-
-        // `|` is used as marker where the language service is asked for refactorings.
-        testSingleFileService(
+describe("convertStringConcatenationToStringTemplate", () => {
+    const action = {
+        refactoringName,
+        actionName: convertStringConcatenationToStringTemplate
+    };
+    describe("Expect Refactoring", () => {
+        // "|" is used as marker for where to trigger the refactoring.
+        testSingleFileLanguageService(
             `const str = "|hello";`,
-            expectRefactored(action, "const str = `hello`;")
+            expectRefactoring(action, "const str = `hello`;")
         );
-        testSingleFileService(
-            `const str = "hello" |+ (i + 1);`,
-            expectRefactored(action, "const str = `hello${(i + 1)}`;")
-        );
-        testSingleFileService(
+        testSingleFileLanguageService(
             `const str = ("hello" |+ i) + 1;`,
-            expectRefactored(action, "const str = `hello${i}${1}`;")
+            expectRefactoring(action, "const str = `hello${i}${1}`;")
         );
-        testSingleFileService(
+    });
+
+    describe("Expect No Refactoring", () => {
+        testSingleFileLanguageService(
+            `const str = "test";|`,
+            expectNoRefactoring(refactoringName)
+        );
+        testSingleFileLanguageService(
             `const str = (1 + "hello" |+ i) + 1;`,
-            expectNotRefactored(refactoringName)
+            expectNoRefactoring(refactoringName)
         );
     });
 });
+
+type TestFn = (
+    service: ts.LanguageService,
+    markers: number[],
+    mainFile: { name: string; content: string }
+) => void;
+
+/**
+ * Describes a test for a given content with markers.
+ * Prepares environment and calles `testFn` to do the actual testing.
+ */
+function testSingleFileLanguageService(content: string, testFn: TestFn): void {
+    it(content, () => {
+        const main = stripMarkers(content);
+        const mainFile = { name: "main.ts", content: main.stripped };
+        const files = new Map<string, string>([
+            [mainFile.name, mainFile.content]
+        ]);
+        const serviceHost = new MockLanguageServiceHost(files, {});
+        const baseService = ts.createLanguageService(
+            serviceHost,
+            ts.createDocumentRegistry()
+        );
+        const decoratedService = createDecoratedLanguageService(
+            ts,
+            baseService
+        );
+        testFn(decoratedService, main.markers, mainFile);
+    });
+}
 
 // ...
 ```
@@ -157,7 +190,7 @@ In this phase it is extremely useful to have hot reloading and a way to easily a
 
 ![](./mocha.png)
 
-Alternatively, you can use my library easy-attach that works even without VS Code.
+Alternatively, you can use my library [easy-attach](https://github.com/hediet/easy-attach) that works even without VS Code.
 
 Equipped with hot reloading, the core class now looks like this:
 

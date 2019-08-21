@@ -1,6 +1,7 @@
 ---
 date: 2019-10-02
 title: Hot Reload for VS Code Extension Development
+github: { org: "hediet", repo: "node-reload" }
 ---
 
 ![demo](./small.gif)

@@ -14,25 +14,33 @@ export interface MarkdownContext {
 export function markdownStringToContent(
     markdown: string,
     context: MarkdownContext
-): { content: Content; date: Date; title: string } {
+): {
+    content: Content;
+    date: Date;
+    title: string;
+    meta: Record<string, unknown>;
+} {
     const remark = remarkAbstract();
     const ast: Root = remark.use(mdfrontmatter).parse(markdown);
     const c2: MarkdownContext2 = {
         basedir: context.basedir,
         date: undefined,
-        title: undefined
+        title: undefined,
+        meta: {}
     };
     const content = markdownToContent(ast, c2);
     return {
         content,
         date: c2.date!,
-        title: c2.title!
+        title: c2.title!,
+        meta: c2.meta
     };
 }
 
 interface MarkdownContext2 extends MarkdownContext {
     title: string | undefined;
     date: Date | undefined;
+    meta: Record<string, unknown>;
 }
 
 type Narrow<T extends { type: string }, TId> = T extends { type: TId }
@@ -111,6 +119,7 @@ function markdownToContent(
             if (doc.date) {
                 context.date = new Date(doc.date);
             }
+            Object.assign(context.meta, doc);
             return {
                 kind: "list",
                 items: []

@@ -2,7 +2,8 @@ import React = require("react");
 import {
     BasePage,
     BlogDate,
-    BaseData
+    BaseData,
+    GithubBadge
 } from "../../../../blog.hediet.de/src/content-presenter/components";
 import { BlogPageConstructor } from "../../../../blog.hediet.de/src/content-provider/BlogPageConstructor";
 import { PageWithRouter } from "@hediet/static-page";
@@ -72,7 +73,8 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
         return pageCtor.date;
     }
 
-    @observable serializedData: string = window.location.hash.substr(1);
+    @observable serializedData: string =
+        typeof window !== "undefined" ? window.location.hash.substr(1) : "";
 
     @computed get selectedDemo(): Demo | undefined {
         return demos.find(d => d.serializedData === this.serializedData);
@@ -140,8 +142,12 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
                     <div style={{ display: "flex" }}>
                         <h1>{this.title}</h1>
                     </div>
-                    <BlogDate date={this.date} />
-
+                    <div className="badges" style={{ display: "flex" }}>
+                        <BlogDate date={this.date} />
+                        <div style={{ marginLeft: "auto" }}>
+                            <GithubBadge org="hediet" repo="rxjs-playground" />
+                        </div>
+                    </div>
                     <p>
                         This post is a playground for{" "}
                         <a href="https://rxjs-dev.firebaseapp.com/">RxJS</a>, a
@@ -171,11 +177,10 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
                         For technical reasons, delayed Rx operations must be
                         given the scheduler passed to the{" "}
                         <code className="inlineCode">visualize</code> function.
-                        Use the <code className="inlineCode">track</code>{" "}
-                        function to track piped (intermediate) observables. The
-                        browser url reflects the current playground model. Use
-                        the top left fullscreen button to maximize the
-                        playground.
+                        The <code className="inlineCode">track</code> function
+                        can be used to track piped (intermediate) observables.
+                        The browser url reflects the current playground model
+                        and can be used for sharing.
                     </p>
 
                     <DemoSelect

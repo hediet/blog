@@ -85,7 +85,7 @@ export class BasePage extends React.Component<
                     </div>
                     <div className="title">
                         <Link to={this.props.index}>Blog</Link>
-                        <div>Projects</div>
+                        {/* <div>Projects</div> */}
                         <div className="divider" />
 
                         <a

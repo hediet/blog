@@ -5,13 +5,15 @@ import {
     Content,
     BaseData,
     BasePage,
-    ContentRenderer
+    ContentRenderer,
+    GithubBadge
 } from "../components";
 
 export type BlogPost = {
     title: string;
     content: Content;
     date: string;
+    github?: { org: string; repo: string };
 };
 
 export class BlogPage extends PageWithRouter<{
@@ -25,11 +27,23 @@ export class BlogPage extends PageWithRouter<{
     }
 
     render() {
+        const post = this.data.post;
         return (
             <BasePage {...this.data.baseData}>
-                <h1>{this.data.post.title}</h1>
-                <BlogDate date={new Date(this.data.post.date)} />
-                <ContentRenderer content={this.data.post.content} />
+                <h1>{post.title}</h1>
+
+                <div className="badges" style={{ display: "flex" }}>
+                    <BlogDate date={new Date(post.date)} />
+                    {post.github && (
+                        <div style={{ marginLeft: "auto" }}>
+                            <GithubBadge
+                                org={post.github.org}
+                                repo={post.github.repo}
+                            />
+                        </div>
+                    )}
+                </div>
+                <ContentRenderer content={post.content} />
             </BasePage>
         );
     }
