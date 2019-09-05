@@ -1,6 +1,8 @@
 import React = require("react");
-import { toJS } from "mobx";
+import { toJS, observable } from "mobx";
 import { Asset } from "@hediet/static-page";
+import classNames = require("classnames");
+import { observer } from "mobx-react";
 
 export type Content =
     | { kind: "list"; items: ReadonlyArray<Content> }
@@ -74,6 +76,7 @@ export function text(value: string): Content {
     };
 }
 
+@observer
 export class ContentRenderer extends React.Component<{ content: Content }> {
     render() {
         return renderContent(this.props.content);
@@ -83,6 +86,8 @@ export class ContentRenderer extends React.Component<{ content: Content }> {
 type Narrow<T extends { kind: string }, TId> = T extends { kind: TId }
     ? T
     : never;
+
+const codeOptions = observable({ wrapCode: false });
 
 function renderContent(content: Content, key: number = 0): React.ReactElement {
     const handlers: {
@@ -110,7 +115,13 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
         ),
         image: c => <img key={key} src={c.asset.url} />,
         code: c => (
-            <pre className={`language-${c.lang}`}>
+            <pre
+                className={classNames(
+                    `language-${c.lang}`,
+                    codeOptions.wrapCode && "wrap"
+                )}
+                onClick={s => (codeOptions.wrapCode = !codeOptions.wrapCode)}
+            >
                 <code
                     className={`language-${c.lang}`}
                     dangerouslySetInnerHTML={{ __html: c.html }}

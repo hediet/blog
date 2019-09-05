@@ -1,10 +1,10 @@
-import {} from "@blueprintjs/core";
+import { Spinner, Overlay } from "@blueprintjs/core";
 import { computed, observable } from "mobx";
-import { observer } from "mobx-react";
+import { observer, Observer } from "mobx-react";
 import * as React from "react";
 import classnames = require("classnames");
 import "../assets/style.scss";
-import { RouteRef, Link } from "@hediet/static-page";
+import { RouteRef, Link, RouterConsumer } from "@hediet/static-page";
 import classNames = require("classnames");
 
 export type BaseData = {
@@ -41,7 +41,8 @@ export class BasePage extends React.Component<
             this.focus = true;
         });
         window.addEventListener("blur", () => {
-            this.focus = false;
+            //this.focus = false;
+            // iue
         });
     }
 
@@ -101,6 +102,25 @@ export class BasePage extends React.Component<
                             Twitter
                         </a>
                     </div>
+                    <RouterConsumer>
+                        {r =>
+                            r ? (
+                                <Observer>
+                                    {() => (
+                                        <Overlay
+                                            isOpen={r.isLoading}
+                                            hasBackdrop={false}
+                                            autoFocus={false}
+                                        >
+                                            <div className="part-spinner">
+                                                <Spinner />
+                                            </div>
+                                        </Overlay>
+                                    )}
+                                </Observer>
+                            ) : null
+                        }
+                    </RouterConsumer>
                     <div className="body">{this.props.children}</div>
                 </div>
             </div>

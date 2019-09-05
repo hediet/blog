@@ -134,7 +134,9 @@ export abstract class Page<TData extends Data = Data> {
 <html>
     <head>
         <title>${this.title}</title>
-        <meta charset="utf-8"/>
+        <meta charset="utf-8">
+        <meta name="theme-color" content="#130f12" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <div id="target"></div>

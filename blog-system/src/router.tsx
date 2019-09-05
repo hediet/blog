@@ -1,10 +1,11 @@
 import { RouteRef, Page, RouteIndexProvider } from "./page";
 import React = require("react");
-import { observable } from "mobx";
+import { observable, runInAction } from "mobx";
 import { observer, Observer } from "mobx-react";
 
 export interface Router {
     navigateTo(ref: RouteRef): Promise<void>;
+    readonly isLoading: boolean;
 }
 
 const RouterContext = React.createContext<Router | undefined>(undefined);
@@ -20,6 +21,8 @@ interface ReactRouterProps {
 @observer
 export class ReactRouter extends React.Component<ReactRouterProps>
     implements Router {
+    @observable
+    isLoading: boolean = false;
     @observable currentPage: Page = this.props.initialPage;
 
     constructor(props: ReactRouterProps) {
@@ -49,9 +52,17 @@ export class ReactRouter extends React.Component<ReactRouterProps>
     }
 
     async navigateTo(ref: RouteRef): Promise<void> {
+        history.pushState(ref.serialize(), "", ref.getUrl());
+        let loading = true;
+        setTimeout(() => {
+            this.isLoading = loading;
+        }, 100);
         const page = await ref.loadPage();
-        this.currentPage = page;
-        history.pushState(ref.serialize(), page.title, ref.getUrl());
+        runInAction("navigation finished", () => {
+            loading = false;
+            this.isLoading = false;
+            this.currentPage = page;
+        });
     }
 
     render(): React.ReactElement {
