@@ -131,12 +131,14 @@ class MyService {
 
     public foo() {
         // ...
+        assert(this.myClass === undefined);
         this.myClass = this.dispose.track(new MyClass());
         // ...
     }
 
     public bar() {
         // ...
+        assert(this.myClass !== undefined);
         this.dispose.untrack(this.myClass).dispose();
         this.myClass = undefined;
         // ...

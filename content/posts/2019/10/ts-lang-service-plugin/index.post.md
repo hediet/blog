@@ -1,6 +1,7 @@
 ---
 date: 2019-10-10
 title: Implementing TypeScript Refactorings With Hot Reloading
+github: { org: "hediet", repo: "hediet-ts-refactoring-lsp" }
 ---
 
 This post is about how to implement a simple refactoring for TypesScript as a language service plugin that can be used in VS Code.
@@ -26,76 +27,93 @@ With the help of autocompletion, I soon spotted `getApplicableRefactors` and `ge
 
 By using `getProgram` of the underlying lanugage service, the plugin can access the current syntax tree and the type checker.
 
-I ended with the following structure:
+I ended with the following project structure:
 
 ```ts
 // src/index.ts: Entry point of the plugin, automatically loaded by the language server.
-import * as ts_module from "typescript/lib/tsserverlibrary";
+import * as ts from "typescript/lib/tsserverlibrary";
 import { createDecoratedLanguageService } from "./createDecoratedLanguageService";
 
-export = function init(modules: { typescript: typeof ts_module }) {
+export = function init(modules: { typescript: typeof ts }) {
     return {
-        // is called by TypeScript to get the decorated language service
+        // Is called by the TypeScript language server to get the decorated language service.
         create(info: ts.server.PluginCreateInfo): ts.LanguageService {
-            return createDecoratedLanguageService(info.languageService);
+            // At runtime, use `modules.typescript` rather than importing "typescript".
+            // This avoids version conflicts, in particular when new AST kinds are added.
+            // Types however still must be imported from "typescript".
+            return createLanguageServiceWithRefactorings(
+                modules.typescript,
+                info.languageService,
+                info.project.projectService
+            );
         }
     };
 };
 ```
 
 ```ts
-// src/createDecoratedLanguageService.ts
+// src/createLanguageServiceWithRefactorings.ts
 import * as ts from "typescript";
-import { RefactoringLanguageService } from "./RefactoringLanguageService";
 
-// Merges data from the underlying language service and our own refactoring service
-export function createDecoratedLanguageService(
+export function createLanguageServiceWithRefactorings(
+    typescript: typeof ts,
     base: ts.LanguageService
 ): ts.LanguageService {
-    const service = new RefactoringLanguageService(base);
-
     return {
         ...base,
-        getApplicableRefactors: (...args) => {
-            const existing = base.getApplicableRefactors(...args);
-            const ours = service.getApplicableRefactors(...args);
-            return [...ours, ...existing];
-        },
-        getEditsForRefactor: (...args): ts.RefactorEditInfo | undefined => {
-            return (
-                base.getEditsForRefactor(...args) ||
-                service.getEditsForRefactor(...args)
+
+        getApplicableRefactors: (fileName, positionOrRange, preferences) => {
+            const existing = base.getApplicableRefactors(
+                fileName,
+                positionOrRange,
+                preferences
             );
+            const refactorings = [];
+            const program = base.getProgram();
+
+            // TODO
+
+            return [...refactorings, ...existing];
+        },
+
+        getEditsForRefactor: (
+            fileName: string,
+            formatOptions: ts.FormatCodeSettings,
+            positionOrRange: number | ts.TextRange,
+            refactorName: string,
+            actionName: string,
+            preferences: ts.UserPreferences | undefined
+        ): ts.RefactorEditInfo | undefined => {
+            const e = base.getEditsForRefactor(
+                fileName,
+                formatOptions,
+                positionOrRange,
+                refactorName,
+                actionName,
+                preferences
+            );
+            if (e) {
+                return e;
+            }
+            const program = base.getProgram();
+
+            // TODO
+
+            return undefined;
         }
     };
 }
 ```
 
+And finally the file where the actual refactor logic should be implemented:
+
 ```ts
-// src/RefactoringLanguageService.ts: Home of the actual refactoring logic
-export class RefactoringLanguageService {
-    constructor(private readonly base: ts.LanguageService) {}
+// src/ConvertToStringTemplateRefactoring.ts
+export class ConvertToStringTemplateRefactoring {
+    public static readonly refactoringName = "@hediet/ts-refactoring-lsp";
+    public static readonly convertToStringTemplate = "convertToStringTemplate";
 
-    getApplicableRefactors(
-        fileName: string,
-        positionOrRange: number | ts.TextRange,
-        preferences: ts.UserPreferences | undefined
-    ): ts.ApplicableRefactorInfo[] {
-        const p = this.base.getProgram();
-        // todo
-    }
-
-    getEditsForRefactor(
-        fileName: string,
-        formatOptions: ts.FormatCodeSettings,
-        positionOrRange: number | ts.TextRange,
-        refactorName: string,
-        actionName: string,
-        preferences: ts.UserPreferences | undefined
-    ): ts.RefactorEditInfo | undefined {
-        const p = this.base.getProgram();
-        // todo
-    }
+    // TODO
 }
 ```
 
@@ -111,28 +129,36 @@ so we don't have to compute positions where to apply the refactoring by ourselve
 This can be implemented in a way so that the actual tests can be expressed like this:
 
 ```ts
-// test/main.ts
-import { createDecoratedLanguageService } from "../src/createDecoratedLanguageService";
-import { MockLanguageServiceHost } from "./MockLanguageServiceHost";
-import { stripMarkers, applyTextChange } from "./utils";
+// test/main.test.ts
 import {
-    convertStringConcatenationToStringTemplate,
-    refactoringName
-} from "../src/RefactoringLanguageService";
+    testSingleFileLanguageService,
+    expectRefactoring,
+    expectNoRefactoring
+} from "./utils";
+import { ConvertToStringTemplateRefactoring } from "../src/ConvertToStringTemplateRefactoring";
+import { createLanguageServiceWithRefactorings } from "../src/createLanguageServiceWithRefactorings";
+import ts = require("typescript/lib/tsserverlibrary");
 
 describe("convertStringConcatenationToStringTemplate", () => {
     const action = {
-        refactoringName,
-        actionName: convertStringConcatenationToStringTemplate
+        refactoringName: ConvertToStringTemplateRefactoring.refactoringName,
+        actionName: ConvertToStringTemplateRefactoring.convertToStringTemplate
     };
+
+    const decorateWithRefactorings = (base: ts.LanguageService) =>
+        createLanguageServiceWithRefactorings(ts, base);
+
     describe("Expect Refactoring", () => {
         // "|" is used as marker for where to trigger the refactoring.
+        // `testSingleFileLanguageService` calls mocha's `it` with the program as name.
         testSingleFileLanguageService(
             `const str = "|hello";`,
+            decorateWithRefactorings,
             expectRefactoring(action, "const str = `hello`;")
         );
         testSingleFileLanguageService(
             `const str = ("hello" |+ i) + 1;`,
+            decorateWithRefactorings,
             expectRefactoring(action, "const str = `hello${i}${1}`;")
         );
     });
@@ -140,15 +166,23 @@ describe("convertStringConcatenationToStringTemplate", () => {
     describe("Expect No Refactoring", () => {
         testSingleFileLanguageService(
             `const str = "test";|`,
+            decorateWithRefactorings,
             expectNoRefactoring(refactoringName)
         );
         testSingleFileLanguageService(
             `const str = (1 + "hello" |+ i) + 1;`,
+            decorateWithRefactorings,
             expectNoRefactoring(refactoringName)
         );
     });
 });
+```
 
+`testSingleFileLanguageService` is implemented as follows:
+
+```ts
+// test/utils.ts
+// ...
 type TestFn = (
     service: ts.LanguageService,
     markers: number[],
@@ -157,9 +191,13 @@ type TestFn = (
 
 /**
  * Describes a test for a given content with markers.
- * Prepares environment and calles `testFn` to do the actual testing.
+ * Prepares services and calles `testFn` to do the actual testing.
  */
-function testSingleFileLanguageService(content: string, testFn: TestFn): void {
+export function testSingleFileLanguageService(
+    content: string,
+    decorator: (base: ts.LanguageService) => ts.LanguageService,
+    testFn: TestFn
+): void {
     it(content, () => {
         const main = stripMarkers(content);
         const mainFile = { name: "main.ts", content: main.stripped };
@@ -171,18 +209,76 @@ function testSingleFileLanguageService(content: string, testFn: TestFn): void {
             serviceHost,
             ts.createDocumentRegistry()
         );
-        const decoratedService = createDecoratedLanguageService(
-            ts,
-            baseService
-        );
+        const decoratedService = decorator(baseService);
         testFn(decoratedService, main.markers, mainFile);
     });
 }
-
 // ...
 ```
 
-## Implementing the plugin
+See [`utils.ts`](https://github.com/hediet/hediet-ts-refactoring-lsp/blob/master/language-service-plugin/test/utils.ts) for the remaining implementations.
+
+## Abstractions
+
+At this point, we need to fix the todos in `getApplicableRefactors` and `getEditsForRefactor`.
+
+In our case, for `getApplicableRefactors`, we need to identify the node at the given position
+that can be converted into a string template.
+For `getEditsForRefactor`, we also have to identify the node that should be refactored
+and compute the edits that apply the refactoring.
+
+To factor out the common identification of the node where the refactoring should be applied,
+or generally to maintain context between `getApplicableRefactors` and `getEditsForRefactor`,
+it seems an abstraction for how to implement refactorings might be useful. Ideally, `getApplicableRefactors` returns a function that provides the edits together with each returned refactoring. Our abstraction does that:
+
+```ts
+// src/RefactorProvider.ts
+import * as ts from "typescript";
+
+export abstract class RefactorProvider {
+    constructor(
+        protected readonly typescript: typeof ts,
+        protected readonly base: ts.LanguageService
+    ) {}
+
+    /**
+     * @param filter The filter that is applied to the returned refactors.
+     * Can be used for performance optimizations.
+     */
+    abstract getRefactors(
+        context: {
+            program: ts.Program;
+            positionOrRange: number | ts.TextRange;
+            sourceFile: ts.SourceFile;
+        },
+        filter: RefactorFilter
+    ): Refactor[];
+}
+
+export interface RefactorFilter {
+    refactorName?: string;
+    actionName?: string;
+}
+
+export interface Refactor {
+    name: string;
+    description: string;
+    actions: RefactorAction[];
+}
+
+export interface RefactorAction {
+    name: string;
+    description: string;
+    getEdits(
+        formatOptions: ts.FormatCodeSettings,
+        preferences: ts.UserPreferences | undefined
+    ): ts.RefactorEditInfo | undefined;
+}
+```
+
+Given a `RefactorProvider`, implementing `getApplicableRefactors` and `getEditsForRefactor` should be easy now.
+
+## Implementing a RefactorProvider
 
 In this phase it is extremely useful to have hot reloading and a way to easily attach a debugger.
 `@hediet/node-reload` is a library that provides a fully featured hot reloading solution for Node JS.
@@ -195,15 +291,17 @@ Alternatively, you can use my library [easy-attach](https://github.com/hediet/ea
 Equipped with hot reloading, the core class now looks like this:
 
 ```ts
-// src/RefactoringLanguageService.ts
-import * as ts from "typescript";
+// src/ConvertToStringTemplateRefactoring.ts
 import {
     hotClass,
     enableHotReload,
     registerUpdateReconciler
 } from "@hediet/node-reload";
+import * as ts from "typescript";
+import { RefactorProvider, Refactor } from "./RefactorProvider";
 
 enableHotReload({ entryModule: module });
+
 // Automatically reloads the new module when it changed
 registerUpdateReconciler(module);
 
@@ -211,34 +309,21 @@ registerUpdateReconciler(module);
 // Hot methods are automatically restarted
 // when they have been changed while being executed.
 @hotClass(module)
-export class RefactoringLanguageService {
-    constructor(private readonly base: ts.LanguageService) {}
+export class ConvertToStringTemplateRefactoring extends RefactorProvider {
+    public static readonly refactoringName = "@hediet/ts-refactoring-lsp";
+    public static readonly convertToStringTemplate = "convertToStringTemplate";
 
-    getApplicableRefactors(
-        fileName: string,
-        positionOrRange: number | ts.TextRange,
-        preferences: ts.UserPreferences | undefined
-    ): ts.ApplicableRefactorInfo[] {
-        const p = this.base.getProgram();
-        if (!p) return [];
+    getRefactors(
+        context: {
+            program: ts.Program;
+            positionOrRange: number | ts.TextRange;
+            sourceFile: ts.SourceFile;
+        },
+        filter: RefactorFilter
+    ): Refactor[] {
         // todo
         debugger;
         return [];
-    }
-
-    getEditsForRefactor(
-        fileName: string,
-        formatOptions: ts.FormatCodeSettings,
-        positionOrRange: number | ts.TextRange,
-        refactorName: string,
-        actionName: string,
-        preferences: ts.UserPreferences | undefined
-    ): ts.RefactorEditInfo | undefined {
-        const p = this.base.getProgram();
-        if (!p) return undefined;
-        // todo
-        debugger;
-        return undefined;
     }
 }
 ```

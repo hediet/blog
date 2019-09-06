@@ -9,7 +9,7 @@ export function GithubBadge(props: { org: string; repo: string }) {
                 style={{ border: "none" }}
                 src={`https://img.shields.io/badge/repo-${encodeURI(
                     text
-                )}-informational.svg`}
+                ).replace(/-/g, "--")}-informational.svg`}
             />
         </a>
     );
