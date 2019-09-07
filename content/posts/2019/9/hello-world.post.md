@@ -1,5 +1,5 @@
 ---
-date: 2019-10-01
+date: 2019-09-07 10:00
 title: Hello World
 github: { org: "hediet", repo: "blog" }
 ---

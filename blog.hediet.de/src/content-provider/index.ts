@@ -22,7 +22,6 @@ import {
 } from "../content-presenter/components/Content";
 import { BlogPage } from "../content-presenter/pages/BlogPage";
 import { MainPage } from "../content-presenter/pages/MainPage";
-import { MonacoPage } from "../content-presenter/pages/MonacoPage";
 import { markdownStringToContent } from "./markdownConverter";
 import * as glob from "glob";
 import { BlogPageConstructor } from "./BlogPageConstructor";
@@ -51,14 +50,6 @@ export function getPages(): Route[] {
     const blogPosts = getPosts();
 
     return [
-        new Route(
-            path(["monaco"]),
-            new MonacoPage({
-                baseData: {
-                    index: path.default.ref()
-                }
-            })
-        ),
         new Route(
             path.default,
             new MainPage({

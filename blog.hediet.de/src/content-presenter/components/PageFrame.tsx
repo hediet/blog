@@ -2,17 +2,15 @@ import { Spinner, Overlay } from "@blueprintjs/core";
 import { computed, observable } from "mobx";
 import { observer, Observer } from "mobx-react";
 import * as React from "react";
-import classnames = require("classnames");
 import "../assets/style.scss";
 import { RouteRef, Link, RouterConsumer } from "@hediet/static-page";
-import classNames = require("classnames");
 
 export type BaseData = {
     index: RouteRef;
 };
 
 @observer
-export class BasePage extends React.Component<
+export class PageFrame extends React.Component<
     {
         children: React.ReactNode;
         fullscreenShare?: number; // between 0 and 1
@@ -41,8 +39,7 @@ export class BasePage extends React.Component<
             this.focus = true;
         });
         window.addEventListener("blur", () => {
-            //this.focus = false;
-            // iue
+            this.focus = false;
         });
     }
 

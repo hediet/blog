@@ -1,17 +1,17 @@
 import React = require("react");
 import {
-    BasePage,
+    PageFrame,
     BlogDate,
     BaseData,
     GithubBadge
-} from "../../../../blog.hediet.de/src/content-presenter/components";
-import { BlogPageConstructor } from "../../../../blog.hediet.de/src/content-provider/BlogPageConstructor";
+} from "../../blog.hediet.de/src/content-presenter/components";
+import { BlogPageConstructor } from "../../blog.hediet.de/src/content-provider/BlogPageConstructor";
 import { PageWithRouter } from "@hediet/static-page";
 import { observable, runInAction, computed } from "mobx";
 
 const pageCtor: BlogPageConstructor = {
     title: "A TypeScript Playground for RX JS",
-    date: new Date("2019-10-15"),
+    date: new Date("2019-09-15"),
     preview: {
         kind: "text",
         value: `This post is a playground for
@@ -33,19 +33,21 @@ export class UrlHashStore {
     @observable private value: string | undefined = this.get();
 
     constructor() {
-        const fn = () => {
-            const next = window.location.hash.substr(1);
-            if (this.value !== next) {
-                this.value = next;
-                runInAction(() => {
+        if (typeof window !== "undefined") {
+            const fn = () => {
+                const next = window.location.hash.substr(1);
+                if (this.value !== next) {
                     this.value = next;
-                });
-            }
-        };
+                    runInAction(() => {
+                        this.value = next;
+                    });
+                }
+            };
 
-        fn();
+            fn();
 
-        window.addEventListener("hashchange", fn);
+            window.addEventListener("hashchange", fn);
+        }
     }
 
     get(): string | undefined {
@@ -84,14 +86,14 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
     };
 
     @observable
-    private ref: BasePage | null = null;
-    readonly setBasePage = (ref: BasePage | null) => {
+    private ref: PageFrame | null = null;
+    readonly setBasePage = (ref: PageFrame | null) => {
         this.ref = ref;
     };
 
     render() {
         return (
-            <BasePage
+            <PageFrame
                 fullscreenShare={
                     !this.ref
                         ? 0
@@ -158,7 +160,7 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
                         src={`https://hediet.github.io/rxjs-playground/#${this.dataStore.get()}`}
                     />
                 </div>
-            </BasePage>
+            </PageFrame>
         );
     }
 }

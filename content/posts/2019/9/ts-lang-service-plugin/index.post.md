@@ -1,5 +1,5 @@
 ---
-date: 2019-10-10
+date: 2019-09-07 14:00
 title: Implementing TypeScript Refactorings With Hot Reloading
 github: { org: "hediet", repo: "hediet-ts-refactoring-lsp" }
 ---
@@ -335,7 +335,7 @@ For hot reloading to work with TypeScript, `tsc` must be started in watch mode (
 
 At this point, we can already start debugging the tests.
 As you can see, if the currently executed method is changed, it is simply reexecuted when continuing.
-This is almost like an inline playground for refactorings:
+With my [debug visualizer extension](https://marketplace.visualstudio.com/items?itemName=hediet.debug-visualizer) for VS Code, this is almost like an inline playground for refactorings:
 
 ![](./hot-reload-demo.gif)
 

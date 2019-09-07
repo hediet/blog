@@ -30,7 +30,7 @@ function generatePreview(
     }
 
     const handlers: {
-        [TKey in Content["kind"]]: (content: Narrow<Content, TKey>) => Content
+        [TKey in Content["kind"]]: (content: Narrow<Content, TKey>) => Content;
     } = {
         list: c => ({
             kind: "list",
@@ -93,7 +93,7 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
     const handlers: {
         [TKey in Content["kind"]]: (
             content: Narrow<Content, TKey>
-        ) => React.ReactElement
+        ) => React.ReactElement;
     } = {
         list: c => (
             <React.Fragment key={key}>
@@ -116,6 +116,7 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
         image: c => <img key={key} src={c.asset.url} />,
         code: c => (
             <pre
+                key={key}
                 className={classNames(
                     `language-${c.lang}`,
                     codeOptions.wrapCode && "wrap"
@@ -128,7 +129,11 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
                 />
             </pre>
         ),
-        badge: c => <span className="badge">{c.text}</span>
+        badge: c => (
+            <span key={key} className="badge">
+                {c.text}
+            </span>
+        )
     };
 
     const h = handlers[content.kind];

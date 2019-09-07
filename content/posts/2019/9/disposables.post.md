@@ -1,5 +1,5 @@
 ---
-date: 2019-10-04
+date: 2019-09-07 12:00
 title: The Disposable Pattern in TypeScript
 ---
 

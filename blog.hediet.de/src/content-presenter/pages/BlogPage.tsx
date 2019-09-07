@@ -1,13 +1,13 @@
 import React = require("react");
-import { PageWithRouter } from "@hediet/static-page";
 import {
     BlogDate,
     Content,
     BaseData,
-    BasePage,
+    PageFrame,
     ContentRenderer,
     GithubBadge
 } from "../components";
+import { BasePage } from "./BasePage";
 
 export type BlogPost = {
     title: string;
@@ -16,7 +16,7 @@ export type BlogPost = {
     github?: { org: string; repo: string };
 };
 
-export class BlogPage extends PageWithRouter<{
+export class BlogPage extends BasePage<{
     post: BlogPost;
     baseData: BaseData;
 }> {
@@ -29,7 +29,7 @@ export class BlogPage extends PageWithRouter<{
     render() {
         const post = this.data.post;
         return (
-            <BasePage {...this.data.baseData}>
+            <PageFrame {...this.data.baseData}>
                 <h1>{post.title}</h1>
 
                 <div className="badges" style={{ display: "flex" }}>
@@ -44,7 +44,7 @@ export class BlogPage extends PageWithRouter<{
                     )}
                 </div>
                 <ContentRenderer content={post.content} />
-            </BasePage>
+            </PageFrame>
         );
     }
 }

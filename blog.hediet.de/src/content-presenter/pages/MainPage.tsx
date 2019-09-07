@@ -1,7 +1,8 @@
 import React = require("react");
-import { BasePage, BaseData } from "../components/BasePage";
+import { PageFrame, BaseData } from "../components/PageFrame";
 import { RouteRef, Page, Link, PageWithRouter } from "@hediet/static-page";
 import { Content, ContentRenderer } from "../components/Content";
+import { BasePage } from "./BasePage";
 
 export type PostSummary = {
     title: string;
@@ -10,15 +11,19 @@ export type PostSummary = {
     date: string;
 };
 
-export class MainPage extends PageWithRouter<{
+export class MainPage extends BasePage<{
     recentPosts: PostSummary[];
     baseData: BaseData;
 }> {
     module = module;
 
+    get title(): string {
+        return "Hediet's Blog";
+    }
+
     render() {
         return (
-            <BasePage {...this.data.baseData}>
+            <PageFrame {...this.data.baseData}>
                 {this.data.recentPosts.map((p, idx) => (
                     <div key={idx} className="postSummary">
                         <div className="postSummaryHeader">
@@ -43,7 +48,7 @@ export class MainPage extends PageWithRouter<{
                         {idx < this.data.recentPosts.length - 1 && <hr />}
                     </div>
                 ))}
-            </BasePage>
+            </PageFrame>
         );
     }
 }
