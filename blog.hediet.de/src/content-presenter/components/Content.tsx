@@ -134,7 +134,7 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
     } = {
         list: c => (
             <React.Fragment key={key}>
-                {c.items.map(renderContent)}{" "}
+                {c.items.map(renderContent)}
             </React.Fragment>
         ),
         emphasis: c => <i key={key}>{renderContent(c.body)}</i>,

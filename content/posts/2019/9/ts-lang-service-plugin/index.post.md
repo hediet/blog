@@ -32,7 +32,7 @@ I ended with the following project structure:
 ```ts
 // src/index.ts: Entry point of the plugin, automatically loaded by the language server.
 import * as ts from "typescript/lib/tsserverlibrary";
-import { createDecoratedLanguageService } from "./createDecoratedLanguageService";
+import { createLanguageServiceWithRefactorings } from "./createLanguageServiceWithRefactorings";
 
 export = function init(modules: { typescript: typeof ts }) {
     return {
@@ -402,7 +402,7 @@ It should now be available in most IDEs (like VS Code or Webstorm)!
 
 ## Distribute the plugin via a VS Code Extension
 
-For distributing the plugin via an VS Code extension, simply add a `typescriptServerPlugins` key to the `contributes` section of the `package.json` of your VS Code extension. The name refers to the name of the plugin's `package.json` which must be added as a dependency to your extension.
+For distributing the plugin via a VS Code extension, simply add a `typescriptServerPlugins` key to the `contributes` section of the `package.json` of your VS Code extension. The name refers to the name of the plugin's `package.json` which must be added as a dependency to your extension.
 Since `vsce` does not consider yarn workspaces, you have to publish your plugin first to npm and then install it as dependency to your VS Code extension.
 
 ```json
@@ -423,11 +423,11 @@ Since `vsce` does not consider yarn workspaces, you have to publish your plugin 
 ## Outlook
 
 Language service plugins can do much more.
-They provide an easy way to implement custom features that can be easily distributed to your entire team, even
+They provide a straightforward way to implement custom features that can be easily distributed to your entire team, even
 when they use different IDEs.
 
 Sadly, these features are limited to the language service API, which makes sense if you want to support arbitrary IDEs.
-If you want to implement a VS Code extension that needs unlimited access to the AST or typechecker of the currently opened project, but you don't want to spawn a second language server, you have to be creative as you can only use the fixed language service API to communicate with your language service plugin.
+However, if you want to implement a VS Code extension that needs unlimited access to the AST or typechecker of the currently opened project, but you don't want to spawn a second language server, you have to be creative as your VS Code extension can only use the fixed language service API to communicate with your language service plugin.
 
 However, there is trick: Start your own RPC server in your language service plugin on an random port and use `getQuickInfoAtPosition` at an impossible position from you VS Code extension to obtain that port!
 [Here](https://github.com/hediet/hediet-ts-refactoring-lsp/blob/682fc9e55426ab48b98a1a929607c149342f7abb/language-service-plugin/src/createLanguageServiceWithRpcServer.ts) you can find a sample implementation.
