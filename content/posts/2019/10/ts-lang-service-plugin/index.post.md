@@ -161,6 +161,7 @@ describe("convertStringConcatenationToStringTemplate", () => {
             decorateWithRefactorings,
             expectRefactoring(action, "const str = `hello${i}${1}`;")
         );
+        // ...
     });
 
     describe("Expect No Refactoring", () => {
@@ -174,6 +175,7 @@ describe("convertStringConcatenationToStringTemplate", () => {
             decorateWithRefactorings,
             expectNoRefactoring(refactoringName)
         );
+        // ...
     });
 });
 ```
@@ -216,7 +218,7 @@ export function testSingleFileLanguageService(
 // ...
 ```
 
-See [`utils.ts`](https://github.com/hediet/hediet-ts-refactoring-lsp/blob/master/language-service-plugin/test/utils.ts) for the remaining implementations.
+See [`utils.ts`](https://github.com/hediet/hediet-ts-refactoring-lsp/blob/682fc9e55426ab48b98a1a929607c149342f7abb/language-service-plugin/test/utils.ts) for the remaining implementations.
 
 ## Abstractions
 
@@ -229,16 +231,16 @@ and compute the edits that apply the refactoring.
 
 To factor out the common identification of the node where the refactoring should be applied,
 or generally to maintain context between `getApplicableRefactors` and `getEditsForRefactor`,
-it seems an abstraction for how to implement refactorings might be useful. Ideally, `getApplicableRefactors` returns a function that provides the edits together with each returned refactoring. Our abstraction does that:
+it seems an abstraction for how to implement refactorings might be useful. Ideally, `getApplicableRefactors` returns a function that provides the edits together with each returned refactoring. An abstraction like this does that:
 
 ```ts
 // src/RefactorProvider.ts
-import * as ts from "typescript";
+import * as typescript from "typescript";
 
 export abstract class RefactorProvider {
     constructor(
-        protected readonly typescript: typeof ts,
-        protected readonly base: ts.LanguageService
+        protected readonly ts: typeof typescript,
+        protected readonly base: typescript.LanguageService
     ) {}
 
     /**
@@ -247,9 +249,9 @@ export abstract class RefactorProvider {
      */
     abstract getRefactors(
         context: {
-            program: ts.Program;
-            positionOrRange: number | ts.TextRange;
-            sourceFile: ts.SourceFile;
+            program: typescript.Program;
+            range: typescript.TextRange;
+            sourceFile: typescript.SourceFile;
         },
         filter: RefactorFilter
     ): Refactor[];
@@ -277,6 +279,7 @@ export interface RefactorAction {
 ```
 
 Given a `RefactorProvider`, implementing `getApplicableRefactors` and `getEditsForRefactor` should be easy now.
+The implementation can be found [here](https://github.com/hediet/hediet-ts-refactoring-lsp/blob/682fc9e55426ab48b98a1a929607c149342f7abb/language-service-plugin/src/Refactorings/createLanguageServiceWithRefactorings.ts).
 
 ## Implementing a RefactorProvider
 
@@ -316,7 +319,7 @@ export class ConvertToStringTemplateRefactoring extends RefactorProvider {
     getRefactors(
         context: {
             program: ts.Program;
-            positionOrRange: number | ts.TextRange;
+            range: ts.TextRange;
             sourceFile: ts.SourceFile;
         },
         filter: RefactorFilter
@@ -337,17 +340,70 @@ This is almost like an inline playground for refactorings:
 ![](./hot-reload-demo.gif)
 
 The actual implementation is easy now.
-In `getApplicableRefactors`, all actions must be listed that can be invoked at that position.
-`getEditsForRefactor` then computes how a given action affects the source code.
 
-For our refactoring, we need to find out which AST leaf is at `positionOrRange`,
-then we navigate the AST tree upwards until we are not in a binary expression anymore.
-If the very left node of the last binary expression is a string, we can suggest to convert that expression tree to a single template string.
+First, we need to find out which smallest AST node spans `range`,
+then we navigate the AST tree upwards until our parent is neither a binary (`+`) nor a parenthesized expression.
+Then we traverse all descendants of that node to collect the parts of the final template string.
+We then suggest the refactoring if at least one of these parts is a string literal:
 
-## Distribute the plugin through a VS Code Extension
+```ts
+getRefactors(context: {
+    program: ts.Program;
+    range: ts.TextRange;
+    sourceFile: ts.SourceFile;
+}): Refactor[] {
+    let child = findInnerMostNodeAt(context.sourceFile, context.range.pos);
+    if (!child) { return []; }
 
-This is especially easy when the VS Code extension and the language server plugin are organized in a yarn workspace.
-Simply add a `typescriptServerPlugins` key to the `contributes` section of the `package.json` of your VS Code extension. The name refers to the name of the plugin's `package.json`.
+    const node = this.getSuitableOuterMostParent(child);
+    const parts = this.getParts(node);
+
+    if (parts.kind !== "stringLiteralSequence") {
+        return [];
+    }
+
+    const action: RefactorAction = {
+        description: "Convert to String Template",
+        name: ConvertToStringTemplateRefactoring.convertToStringTemplate,
+        getEdits: (formatOptions, preferences) => {
+            return this.getEdits(
+                context.sourceFile,
+                node,
+                parts.parts
+            );
+        },
+    };
+
+    return [
+        {
+            name: ConvertToStringTemplateRefactoring.refactoringName,
+            description: "Convert to String Template",
+            actions: [ action ],
+        },
+    ];
+}
+```
+
+The remaining implementation can be read [here](https://github.com/hediet/hediet-ts-refactoring-lsp/blob/682fc9e55426ab48b98a1a929607c149342f7abb/language-service-plugin/src/Refactorings/ConvertToStringTemplateRefactoring.ts).
+
+## Enabling the plugin
+
+To enable the plugin, simply distribute it via npm, install it as dev dependency and add it to the project's tsconfig file:
+
+```json
+{
+    "compilerOptions": {
+        "plugins": [{ "name": "my-ts-plugin" }]
+    }
+}
+```
+
+It should now be available in most IDEs (like VS Code or Webstorm)!
+
+## Distribute the plugin via a VS Code Extension
+
+For distributing the plugin via an VS Code extension, simply add a `typescriptServerPlugins` key to the `contributes` section of the `package.json` of your VS Code extension. The name refers to the name of the plugin's `package.json` which must be added as a dependency to your extension.
+Since `vsce` does not consider yarn workspaces, you have to publish your plugin first to npm and then install it as dependency to your VS Code extension.
 
 ```json
 {
@@ -363,3 +419,17 @@ Simply add a `typescriptServerPlugins` key to the `contributes` section of the `
     // ...
 }
 ```
+
+## Outlook
+
+Language service plugins can do much more.
+They provide an easy way to implement custom features that can be easily distributed to your entire team, even
+when they use different IDEs.
+
+Sadly, these features are limited to the language service API, which makes sense if you want to support arbitrary IDEs.
+If you want to implement a VS Code extension that needs unlimited access to the AST or typechecker of the currently opened project, but you don't want to spawn a second language server, you have to be creative as you can only use the fixed language service API to communicate with your language service plugin.
+
+However, there is trick: Start your own RPC server in your language service plugin on an random port and use `getQuickInfoAtPosition` at an impossible position from you VS Code extension to obtain that port!
+[Here](https://github.com/hediet/hediet-ts-refactoring-lsp/blob/682fc9e55426ab48b98a1a929607c149342f7abb/language-service-plugin/src/createLanguageServiceWithRpcServer.ts) you can find a sample implementation.
+
+I hope you enjoyed this post - if you have questions, you can ping me on twitter ;)
