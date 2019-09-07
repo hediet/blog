@@ -4,7 +4,8 @@ import {
     RouteIndexProvider,
     PlaceholderRouteIndexProvider,
     RouteRef,
-    ReactRouter
+    ReactRouter,
+    Path
 } from "@hediet/static-page";
 import ReactDOM = require("react-dom");
 import React = require("react");
@@ -44,7 +45,8 @@ export abstract class BasePage<TData extends Data = Data> extends Page<
         );
     }
 
-    public getHtmlTemplate(): string {
+    public getHtmlTemplate(path: Path): string {
+        const currentUrl = path.toString();
         return `<!DOCTYPE html>
 <html>
     <head>
@@ -52,10 +54,12 @@ export abstract class BasePage<TData extends Data = Data> extends Page<
         <meta charset="utf-8">
         <meta name="theme-color" content="#130f12" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="/feed.rss" />
         
         <script type="text/javascript">
         var _paq = window._paq || [];
         /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+        _paq.push(['setCustomUrl', ${JSON.stringify(currentUrl)}]);
         _paq.push(['trackPageView']);
         _paq.push(['enableLinkTracking']);
         (function() {

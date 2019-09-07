@@ -129,7 +129,7 @@ export abstract class Page<TData extends Data = Data> {
         return "";
     }
 
-    public getHtmlTemplate(): string {
+    public getHtmlTemplate(path: Path): string {
         return `<!DOCTYPE html>
 <html>
     <head>

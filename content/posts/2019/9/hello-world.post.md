@@ -19,3 +19,7 @@ Referenced images are bundled using webpack's file loader plugin.
 I decided against ready-to-use solutions like next.js
 as they don't work that well with TypeScript and
 I wanted to create something I fully control.
+
+You may also want to check out [my mate's blog](https://phiresky.github.io/blog/)
+who shares a similar passion about programming languages and other cool computer stuff.
+Even though I don't think his blog is as [awesome](https://web.archive.org/web/20190907140610/https://phiresky.github.io/blog/2019/about/) as mine, his tool [rga](https://phiresky.github.io/blog/2019/rga--ripgrep-for-zip-targz-docx-odt-epub-jpg/) might actually be.

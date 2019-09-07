@@ -15,10 +15,36 @@ export type Content =
     | { kind: "inlineCode"; code: string }
     | { kind: "code"; /*code: string;*/ lang: string; html: string }
     | { kind: "image"; asset: Asset }
-    | { kind: "badge"; text: string };
+    | { kind: "badge"; text: string }
+    | { kind: "link"; url: string; body: Content };
 
 export function preview(content: Content): Content {
     return generatePreview(content, { availableWordCount: 70 });
+}
+
+export function toText(content: Content): string {
+    const handlers: {
+        [TKey in Content["kind"]]: (content: Narrow<Content, TKey>) => string;
+    } = {
+        list: c => c.items.map(i => toText(i)).join(""),
+        emphasis: c => toText(c.body),
+        strong: c => toText(c.body),
+        paragraph: c => toText(c.body),
+        text: c => c.value,
+        heading: c => toText(c.body),
+        inlineCode: c => `\`${c.code}\``,
+        image: c => "(Image)",
+        code: c => "(Code)",
+        badge: c => "",
+        link: c => toText(c.body)
+    };
+
+    const h = handlers[content.kind];
+    if (!h) {
+        console.log(toJS(content));
+        throw new Error(`No handler for "${content.kind}".`);
+    }
+    return h(content as any);
 }
 
 function generatePreview(
@@ -36,8 +62,14 @@ function generatePreview(
             kind: "list",
             items: c.items.map(i => generatePreview(i, context))
         }),
-        emphasis: c => c,
-        strong: c => c,
+        emphasis: c => ({
+            kind: "emphasis",
+            body: generatePreview(c.body, context)
+        }),
+        strong: c => ({
+            kind: "strong",
+            body: generatePreview(c.body, context)
+        }),
         paragraph: c => generatePreview(c.body, context),
         text: c => {
             const words = c.value.split(/\s/);
@@ -45,6 +77,11 @@ function generatePreview(
             context.availableWordCount -= words.length;
             return text(words.join(" "));
         },
+        link: c => ({
+            kind: "link",
+            url: c.url,
+            body: generatePreview(c.body, context)
+        }),
         heading: c => {
             context.availableWordCount = 0;
             return { kind: "list", items: [] };
@@ -104,6 +141,11 @@ function renderContent(content: Content, key: number = 0): React.ReactElement {
         strong: c => <b key={key}>{renderContent(c.body)}</b>,
         paragraph: c => <p key={key}>{renderContent(c.body)}</p>,
         text: c => <span key={key}>{c.value}</span>,
+        link: c => (
+            <a key={key} href={c.url}>
+                {renderContent(c.body)}
+            </a>
+        ),
         heading: c => {
             const Heading = `h${c.depth}` as any;
             return <Heading key={key}>{renderContent(c.body)}</Heading>;

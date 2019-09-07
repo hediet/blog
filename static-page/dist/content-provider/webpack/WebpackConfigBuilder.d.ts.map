@@ -1,0 +1,1 @@
+{"version":3,"file":"WebpackConfigBuilder.d.ts","sourceRoot":"","sources":["../../../src/content-provider/webpack/WebpackConfigBuilder.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,OAAO,MAAM,SAAS,CAAC;AACnC,OAAO,EAAU,sBAAsB,EAAE,MAAM,IAAI,CAAC;AAcpD,wBAAsB,kBAAkB,CAAC,OAAO,EAAE;IAC9C,IAAI,EAAE,sBAAsB,CAAC;IAC7B,UAAU,EAAE,MAAM,CAAC;CACtB,GAAG,OAAO,CAAC,OAAO,CAAC,aAAa,CAAC,CAOjC"}

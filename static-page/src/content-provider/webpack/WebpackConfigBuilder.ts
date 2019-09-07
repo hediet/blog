@@ -1,6 +1,6 @@
 import { computed } from "mobx";
 import * as webpack from "webpack";
-import { Routes } from "..";
+import { Routes, WebsiteContentProvider } from "..";
 import { HtmlDependencyWebpackPlugin } from "./HtmlDependencyWebpackPlugin";
 import { RoutesWithModules } from "./RoutesWithModules";
 import HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -12,8 +12,21 @@ import VirtualModulesPlugin = require("webpack-virtual-modules");
 import MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 import { AddVirtualModulesPlugin } from "./AddVirtualModulesPlugin";
 import { fromEntries } from "./utils";
+import { AddAssetPlugin } from "./AddAssetsPlugin";
 
-export class WebpackConfigBuilder {
+export async function buildWebpackConfig(options: {
+    site: WebsiteContentProvider;
+    outputPath: string;
+}): Promise<webpack.Configuration> {
+    const { site, outputPath } = options;
+
+    const routes = await site.getPages();
+    const assets = await site.getStaticFiles();
+    const b = new WebpackConfigBuilder({ routes, assets, outputPath });
+    return b.buildConfig();
+}
+
+class WebpackConfigBuilder {
     private readonly initialRoutes: Routes;
 
     @computed
@@ -22,10 +35,16 @@ export class WebpackConfigBuilder {
     }
 
     private readonly outputPath: string;
+    private readonly assets: Record<string, string>;
 
-    constructor(options: { routes: Routes; outputPath: string }) {
+    constructor(options: {
+        routes: Routes;
+        assets: Record<string, string>;
+        outputPath: string;
+    }) {
         this.initialRoutes = options.routes;
         this.outputPath = options.outputPath;
+        this.assets = options.assets;
     }
 
     buildConfig(): webpack.Configuration {
@@ -113,6 +132,7 @@ export class WebpackConfigBuilder {
                 filename: "[name].css",
                 chunkFilename: "[id].css"
             }),
+            new AddAssetPlugin(this.assets),
             new CleanWebpackPlugin.CleanWebpackPlugin(),
             ...this.buildHtmlWebpackPlugins(),
             new HtmlDependencyWebpackPlugin(),
@@ -127,7 +147,9 @@ export class WebpackConfigBuilder {
                     entry: route.id,
                     chunksSortMode: "none",
                     filename: "." + route.route.path.toString() + "/index.html",
-                    templateContent: route.route.page.getHtmlTemplate()
+                    templateContent: route.route.page.getHtmlTemplate(
+                        route.route.path
+                    )
                 })
         );
     }

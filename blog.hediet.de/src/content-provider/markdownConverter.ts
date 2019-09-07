@@ -61,7 +61,7 @@ function markdownToContent(
     const handlers: {
         [TKey in (Item | Root)["type"]]: (
             content: Narrow<Item | Root, TKey>
-        ) => Content
+        ) => Content;
     } = {
         root: item => mapArray(item.children, context),
         text: item => ({ kind: "text", value: item.value }),
@@ -104,7 +104,11 @@ function markdownToContent(
             kind: "inlineCode",
             code: item.value
         }),
-        link: item => ({ kind: "text", value: "not supported" }),
+        link: item => ({
+            kind: "link",
+            body: mapArray(item.children, context),
+            url: item.url
+        }),
         list: item => ({ kind: "text", value: "not supported" }),
         thematicBreak: item => ({ kind: "text", value: "not supported" }),
         toml: item => ({ kind: "text", value: "not supported" }),

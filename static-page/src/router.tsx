@@ -49,6 +49,10 @@ export class ReactRouter extends React.Component<ReactRouterProps>
                 this.props.routeIndexProvider
             );
             const page = await ref.loadPage();
+
+            if (this.props.onNavigated) {
+                this.props.onNavigated(ref, page);
+            }
             this.currentPage = page;
         });
     }
@@ -59,15 +63,21 @@ export class ReactRouter extends React.Component<ReactRouterProps>
         setTimeout(() => {
             this.isLoading = loading;
         }, 100);
-        const page = await ref.loadPage();
-        runInAction("navigation finished", () => {
-            loading = false;
-            if (this.props.onNavigated) {
-                this.props.onNavigated(ref, page);
-            }
-            this.isLoading = false;
-            this.currentPage = page;
-        });
+        try {
+            const page = await ref.loadPage();
+            runInAction("navigation finished", () => {
+                loading = false;
+                if (this.props.onNavigated) {
+                    this.props.onNavigated(ref, page);
+                }
+                this.isLoading = false;
+                this.currentPage = page;
+            });
+        } catch (e) {
+            // Manually go there.
+            // Most probably the site has been updated and the chunk does not exist any more.
+            window.location.href = ref.getUrl();
+        }
     }
 
     render(): React.ReactElement {

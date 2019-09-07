@@ -98,6 +98,9 @@ export class PageFrame extends React.Component<
                         >
                             Twitter
                         </a>
+                        <a className="with-icon rss" href="/feed.rss">
+                            RSS
+                        </a>
                     </div>
                     <RouterConsumer>
                         {r =>

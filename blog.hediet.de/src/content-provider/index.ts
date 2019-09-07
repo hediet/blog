@@ -3,7 +3,8 @@ import {
     hotRequireExportedFn,
     registerUpdateReconciler
 } from "@hediet/node-reload";
-enableHotReload({ entryModule: module });
+
+// enableHotReload({ entryModule: module });
 
 import { Path, path, Page } from "@hediet/static-page";
 import {
@@ -18,7 +19,8 @@ import { dirname, join } from "path";
 import {
     Content,
     text,
-    preview
+    preview,
+    toText
 } from "../content-presenter/components/Content";
 import { BlogPage } from "../content-presenter/pages/BlogPage";
 import { MainPage } from "../content-presenter/pages/MainPage";
@@ -26,10 +28,11 @@ import { markdownStringToContent } from "./markdownConverter";
 import * as glob from "glob";
 import { BlogPageConstructor } from "./BlogPageConstructor";
 import { BaseData } from "../content-presenter/components";
+import { Feed } from "feed";
 
 registerUpdateReconciler(module);
 
-export default class MyWebsite implements WebsiteContentProvider {
+export default class MyWebsite extends WebsiteContentProvider {
     async getPages(): Promise<Routes> {
         const routes = new DynamicRoutes([]);
         hotRequireExportedFn(
@@ -43,6 +46,44 @@ export default class MyWebsite implements WebsiteContentProvider {
             }
         );
         return routes;
+    }
+
+    async getStaticFiles(): Promise<Record<string, string>> {
+        const baseLink = "https://blog.hediet.de";
+        const feed = new Feed({
+            title: "Hediet's Blog",
+            description:
+                "This is my blog where I write about TypeScript, my own projects and other cool programming related stuff.",
+            id: baseLink,
+            link: baseLink,
+            language: "en",
+            author: {
+                name: "Henning Dieterichs",
+                email: "henning.dieterichs@live.de"
+            },
+            copyright: "All rights reserved 2019, Henning Dieterichs"
+        });
+
+        const posts = getPosts();
+        for (const post of posts) {
+            feed.addItem({
+                title: post.title,
+                id: baseLink + blogPostPath(post.id).toString(),
+                link: baseLink + blogPostPath(post.id).toString(),
+                author: [
+                    {
+                        name: "Henning Dieterichs",
+                        email: "henning.dieterichs@live.de"
+                    }
+                ],
+                date: post.date,
+                description: toText(post.preview)
+            });
+        }
+
+        return {
+            "feed.rss": feed.rss2()
+        };
     }
 }
 

@@ -2,10 +2,14 @@ import { Page } from "../page";
 import { Path } from "../path";
 import { observable, action } from "mobx";
 
-export { WebpackConfigBuilder } from "./webpack/WebpackConfigBuilder";
+export { buildWebpackConfig } from "./webpack/WebpackConfigBuilder";
 
-export interface WebsiteContentProvider {
-    getPages(): Promise<Routes>;
+export abstract class WebsiteContentProvider {
+    public abstract getPages(): Promise<Routes>;
+
+    public async getStaticFiles(): Promise<Record<string, string>> {
+        return {};
+    }
 }
 
 export class Routes {

@@ -1,0 +1,1 @@
+{"version":3,"file":"AddAssetsPlugin.d.ts","sourceRoot":"","sources":["../../../src/content-provider/webpack/AddAssetsPlugin.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,OAAO,MAAM,SAAS,CAAC;AAEnC,qBAAa,cAAe,YAAW,OAAO,CAAC,MAAM;aACrB,MAAM,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC;gBAA9B,MAAM,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC;IAE1D,KAAK,CAAC,QAAQ,EAAE,OAAO,CAAC,QAAQ;CAUnC"}

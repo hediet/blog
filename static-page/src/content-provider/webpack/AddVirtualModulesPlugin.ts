@@ -4,7 +4,7 @@ import VirtualModulesPlugin = require("webpack-virtual-modules");
 import { IModule } from "./RoutesWithModules";
 import * as webpack from "webpack";
 
-export class AddVirtualModulesPlugin {
+export class AddVirtualModulesPlugin implements webpack.Plugin {
     constructor(
         private readonly virtualModules: VirtualModulesPlugin,
         private readonly routes: RoutesWithModules
@@ -19,7 +19,7 @@ export class AddVirtualModulesPlugin {
         const newContent = m.getContent();
         if (v !== newContent) {
             this.lastEntries.set(m.id, newContent);
-            console.log("updating ", m.id, newContent);
+            console.log("updating ", m.id);
             this.virtualModules.writeModule(m.id, newContent);
         }
     }
