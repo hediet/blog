@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Hediet's Blog</title>
+        <link>https://blog.hediet.de</link>
+        <description>This is my blog where I write about TypeScript, my own projects and other cool programming related stuff.</description>
+        <lastBuildDate>Sat, 07 Sep 2019 13:04:42 GMT</lastBuildDate>
+        <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>en</language>
+        <copyright>All rights reserved 2019, Henning Dieterichs</copyright>
+        <item>
+            <title><![CDATA[Implementing TypeScript Refactorings With Hot Reloading]]></title>
+            <link>https://blog.hediet.de/post/implementing_typescript_refactorings_with_hot_reloading</link>
+            <guid>https://blog.hediet.de/post/implementing_typescript_refactorings_with_hot_reloading</guid>
+            <pubDate>Sat, 07 Sep 2019 12:00:00 GMT</pubDate>
+            <description><![CDATA[This post is about how to implement a simple refactoring for TypesScript as a language service plugin that can be used in VS Code. It showcases modern development techniques like hot reloading, test driven development and syntax tree visualizations in VS Code.]]></description>
+            <author>henning.dieterichs@live.de (Henning Dieterichs)</author>
+        </item>
+        <item>
+            <title><![CDATA[The Disposable Pattern in TypeScript]]></title>
+            <link>https://blog.hediet.de/post/the_disposable_pattern_in_typescript</link>
+            <guid>https://blog.hediet.de/post/the_disposable_pattern_in_typescript</guid>
+            <pubDate>Sat, 07 Sep 2019 10:00:00 GMT</pubDate>
+            <description><![CDATA[JavaScript and TypeScript developers are used to implement life cycles and side effects imperatively. Examples are `setInterval`/`clearInterval` for starting and stopping a timer and `addEventListener`/`removeEventListener` for adding and removing an event listener. The JavaScript browser API has much more such examples.This principle is adopted for own code too, which often results in something similar to this:This]]></description>
+            <author>henning.dieterichs@live.de (Henning Dieterichs)</author>
+        </item>
+        <item>
+            <title><![CDATA[Hello World]]></title>
+            <link>https://blog.hediet.de/post/hello_world</link>
+            <guid>https://blog.hediet.de/post/hello_world</guid>
+            <pubDate>Sat, 07 Sep 2019 08:00:00 GMT</pubDate>
+            <description><![CDATA[After some long nights I finally published my very own blog! I will mainly use this blog to write about TypeScript, my own projects and other cool programming related stuff.The blog is a static website that uses TypeScript, React, MobX and much more other cool technology. For compiling the blog, I use webpack and dynamically provide each page as a (virtual) module acting as an entry point. Each such]]></description>
+            <author>henning.dieterichs@live.de (Henning Dieterichs)</author>
+        </item>
+    </channel>
+</rss>
