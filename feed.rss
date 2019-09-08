@@ -4,11 +4,27 @@
         <title>Hediet's Blog</title>
         <link>https://blog.hediet.de</link>
         <description>This is my blog where I write about TypeScript, my own projects and other cool programming related stuff.</description>
-        <lastBuildDate>Sat, 07 Sep 2019 14:48:17 GMT</lastBuildDate>
+        <lastBuildDate>Sun, 08 Sep 2019 09:58:22 GMT</lastBuildDate>
         <docs>http://blogs.law.harvard.edu/tech/rss</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <copyright>All rights reserved 2019, Henning Dieterichs</copyright>
+        <item>
+            <title><![CDATA[A TypeScript Playground for RX JS]]></title>
+            <link>https://blog.hediet.de/post/a_typescript_playground_for_rx_js</link>
+            <guid>https://blog.hediet.de/post/a_typescript_playground_for_rx_js</guid>
+            <pubDate>Sun, 08 Sep 2019 10:00:00 GMT</pubDate>
+            <description><![CDATA[This post is a playground for
+        RxJS, a library for reactive programming using Observables that
+        make it easier to compose asynchronous or callback-based
+        code. The playground supports editable as well as
+        computed observables. Events of editable observables can
+        be created with a single click and dragged around, while
+        computed observables are expressed in type-checked
+        JavaScript (also known as TypeScript) and can refer to
+        other observables.]]></description>
+            <author>henning.dieterichs@live.de (Henning Dieterichs)</author>
+        </item>
         <item>
             <title><![CDATA[Implementing TypeScript Refactorings With Hot Reloading]]></title>
             <link>https://blog.hediet.de/post/implementing_typescript_refactorings_with_hot_reloading</link>
