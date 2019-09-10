@@ -4,14 +4,15 @@ import {
     BlogDate,
     BaseData,
     GithubBadge
-} from "../../blog.hediet.de/src/content-presenter/components";
-import { BlogPageConstructor } from "../../blog.hediet.de/src/content-provider/BlogPageConstructor";
+} from "../../../../blog.hediet.de/src/content-presenter/components";
+import { BlogPageConstructor } from "../../../../blog.hediet.de/src/content-provider/BlogPageConstructor";
 import { PageWithRouter } from "@hediet/static-page";
 import { observable, runInAction, computed } from "mobx";
+import * as cookies from "js-cookie";
 
 const pageCtor: BlogPageConstructor = {
     title: "A TypeScript Playground for RX JS",
-    date: new Date("2019-09-15"),
+    date: new Date("2019-09-08 12:00"),
     preview: {
         kind: "text",
         value: `This post is a playground for
@@ -60,6 +61,20 @@ export class UrlHashStore {
     }
 }
 
+class RxJsFullScreen {
+    static readonly instance = new RxJsFullScreen();
+    private readonly cookieName = "rxjs-playground-fullscreen";
+
+    public readonly wasFullScreen = !!cookies.get(this.cookieName);
+    public setIsFullScreen(fullScreen: boolean) {
+        if (fullScreen) {
+            cookies.set(this.cookieName, "true");
+        } else {
+            cookies.remove(this.cookieName);
+        }
+    }
+}
+
 export class Page extends PageWithRouter<{ baseData: BaseData }> {
     module = module;
     get title() {
@@ -91,16 +106,20 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
         this.ref = ref;
     };
 
+    get fullscreenShare(): number {
+        return !this.ref
+            ? 0
+            : Math.abs(this.ref.scrollY - this.ref.scrollYMax) < 10
+            ? 1
+            : 0;
+    }
+
     render() {
+        RxJsFullScreen.instance.setIsFullScreen(this.fullscreenShare === 1);
+
         return (
             <PageFrame
-                fullscreenShare={
-                    !this.ref
-                        ? 0
-                        : Math.abs(this.ref.scrollY - this.ref.scrollYMax) < 10
-                        ? 1
-                        : 0
-                }
+                fullscreenShare={this.fullscreenShare}
                 {...this.data.baseData}
                 ref={this.setBasePage}
             >
@@ -146,11 +165,19 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
                         The <code className="inlineCode">track</code> function
                         can be used to track piped (intermediate) observables.
                         The browser url reflects the current playground model
-                        and can be used for sharing.
+                        and can be used for sharing. Scroll down to maximize the
+                        playground.
                     </p>
 
                     <iframe
                         ref={this.setIFrameRef}
+                        onLoad={() => {
+                            if (RxJsFullScreen.instance.wasFullScreen) {
+                                setTimeout(() => {
+                                    scrollBy({ top: 1000 });
+                                }, 0);
+                            }
+                        }}
                         style={{
                             width: "100%",
                             height: "calc(100vh - 18px)",
