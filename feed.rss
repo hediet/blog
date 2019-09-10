@@ -4,11 +4,19 @@
         <title>Hediet's Blog</title>
         <link>https://blog.hediet.de</link>
         <description>This is my blog where I write about TypeScript, my own projects and other cool programming related stuff.</description>
-        <lastBuildDate>Sun, 08 Sep 2019 09:58:22 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 10 Sep 2019 18:03:42 GMT</lastBuildDate>
         <docs>http://blogs.law.harvard.edu/tech/rss</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <copyright>All rights reserved 2019, Henning Dieterichs</copyright>
+        <item>
+            <title><![CDATA[Hot Reload for VS Code Extension Development]]></title>
+            <link>https://blog.hediet.de/post/hot_reload_for_vs_code_extension_development</link>
+            <guid>https://blog.hediet.de/post/hot_reload_for_vs_code_extension_development</guid>
+            <pubDate>Tue, 10 Sep 2019 00:00:00 GMT</pubDate>
+            <description><![CDATA[Ever wanted to iteratively tweak your VS Code extension but got annoyed on how long it takes to try things out? Then check out `@hediet/node-reload` to immediately apply your code changes to your running extension and speed up your development workflow!]]></description>
+            <author>henning.dieterichs@live.de (Henning Dieterichs)</author>
+        </item>
         <item>
             <title><![CDATA[A TypeScript Playground for RX JS]]></title>
             <link>https://blog.hediet.de/post/a_typescript_playground_for_rx_js</link>
