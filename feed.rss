@@ -4,11 +4,19 @@
         <title>Hediet's Blog</title>
         <link>https://blog.hediet.de</link>
         <description>This is my blog where I write about TypeScript, my own projects and other cool programming related stuff.</description>
-        <lastBuildDate>Tue, 10 Sep 2019 18:03:42 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 04 Oct 2019 14:10:47 GMT</lastBuildDate>
         <docs>http://blogs.law.harvard.edu/tech/rss</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <copyright>All rights reserved 2019, Henning Dieterichs</copyright>
+        <item>
+            <title><![CDATA[How to Stress the C# Compiler]]></title>
+            <link>https://blog.hediet.de/post/how-to-stress-the-csharp-compiler</link>
+            <guid>https://blog.hediet.de/post/how-to-stress-the-csharp-compiler</guid>
+            <pubDate>Fri, 04 Oct 2019 10:00:00 GMT</pubDate>
+            <description><![CDATA[C# is (mostly) a strongly typed programming language. It's type system supports generics, inference, and method overloading. Combining these features, any C# compiler can easily be knocked out. This blog article demonstrates a few approaches. One of them knocks out the programmer more than the compiler, but that's not so important.]]></description>
+            <author>henning.dieterichs@live.de (Henning Dieterichs)</author>
+        </item>
         <item>
             <title><![CDATA[Hot Reload for VS Code Extension Development]]></title>
             <link>https://blog.hediet.de/post/hot_reload_for_vs_code_extension_development</link>
