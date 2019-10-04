@@ -109,13 +109,13 @@ export class Page extends PageWithRouter<{ baseData: BaseData }> {
     get fullscreenShare(): number {
         return !this.ref
             ? 0
-            : Math.abs(this.ref.scrollY - this.ref.scrollYMax) < 10
+            : this.ref.scrollYMax - this.ref.scrollY < 10
             ? 1
             : 0;
     }
 
     render() {
-        RxJsFullScreen.instance.setIsFullScreen(this.fullscreenShare === 1);
+        RxJsFullScreen.instance.setIsFullScreen(this.fullscreenShare >= 1);
 
         return (
             <PageFrame
