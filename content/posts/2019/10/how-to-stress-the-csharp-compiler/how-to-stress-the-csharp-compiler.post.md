@@ -10,18 +10,19 @@ Combining these features, any C# compiler can easily be knocked out.
 This blog article demonstrates a few approaches.
 One of them knocks out the programmer more than the compiler, but that's not so important.
 
-## C# is NP hard
+## C# is NP-hard
 
-Deciding whether a C# program is valid, i.e. parses and typechecks without errors, is NP hard.
-The still unsolved P≠NP conjecture implies that there is no algorithm than can solve any NP hard problem in polynomial time!
-This means that there are relatively short programs that will keep any C# compiler busy for quite a while, assuming the compiler correctly type checks the program.
+Deciding whether a C# program is valid, i.e. parses and type-checks without errors, is NP-hard.
+The still unsolved P≠NP conjecture implies that there is no algorithm than can solve any NP-hard problem in polynomial time!
+This means that there are relatively short programs that will keep any C# compiler busy for quite a while, assuming the compiler correctly type-checks the program.
 
-To prove that C# is NP hard, it is sufficient to show that the type checker can be used to check whether a given boolean 3-SAT formula is satisfiable.
+To prove that C# is NP-hard, it is sufficient to show that the type-checker can be used to check whether a given boolean 3-SAT formula is satisfiable.
 A 3-SAT formula is a conjunction (`&&`) of disjunctions (`||`) so that
-each disjunction consists of at most three literales whereas
+each disjunction consists of at most three literals whereas
 each literal is either a variable (`x`) or a negated variable (`!x`).
 
-The idea is not hard to understand, so let's dive straight into the annotated code for an exemplary formula.
+The idea of this reduction is not hard to understand, so let's dive straight into the annotated code for an exemplary formula.
+You can find the full code [here](https://github.com/hediet/blog/blob/d85bf8950a3468fe9fb2e4b2e67388c352d9410c/content/posts/2019/10/how-to-stress-the-csharp-compiler/csharp-demo1.cs).
 
 ```cs
 using System;
@@ -32,7 +33,7 @@ class False {}
 
 class Program {
     // The `Or` method can only be called if one of its arguments is of type True.
-    // `Or(new False(), new False())` won't be accepted by the type checker,
+    // `Or(new False(), new False())` won't be accepted by the type-checker,
     // while `Or(new True(), new False())` and `Or(new False(), new True())` are.
     static void Or(True a, object b) {}
     static void Or(False a, True b) {}
@@ -58,9 +59,10 @@ Using overloads, we can then let the compiler decide whether the variable should
 
 This is everything we need!
 The following code states that 3 pigeons fit into 2 pigeon holes.
-Even though this is a 2-SAT formula, 3-SAT formulas are expressed analogous.
-This is obviously false, thus the type checker will complain that `False` cannot be assigned to `True`.
-First we spawn several variables that the type checker can chose to be `True` or `False`,
+This is obviously false, thus the type-checker will complain that `False` cannot be assigned to `True`.
+Even though this is a 2-SAT formula, 3-SAT formulas are expressed analogous, by simply adjusting `Or` to accept three arguments.
+
+First we spawn several variables that the type-checker can chose to be `True` or `False`,
 then we constrain these variables to our problem.
 
 ```cs
@@ -93,12 +95,12 @@ then we constrain these variables to our problem.
 ```
 
 If the compiler can chose overloads of `Var` so that
-the entire body typechecks, the boolean formula is satisfiable and there is also only one unique variable assignment.
+the entire body type-checks, the boolean formula is satisfiable and there is also only one unique variable assignment.
 The concrete chosen overloads reveal how to assign the variables so that the formula becomes true.
-If there are multiple variable assignments that satisfy the formula, the type checker will complain that the overload is ambigue.
+If there are multiple variable assignments that satisfy the formula, the type-checker will complain that the overload is ambigue.
 
-As this reduction works for all 3-SAT instances, we showed that C# and in particular type checking is NP hard!
-P≠NP now promises that there are C# programs causing an exponential runtime of the type checker.
+As this reduction works for all 3-SAT instances, we showed that C# and in particular type-checking is NP-hard!
+P≠NP now promises that there are C# programs causing an exponential runtime of the type-checker.
 As it turns out, the Microsoft C# compiler _Roslyn_ is just brute forcing every possible overload,
 so this simple code is already sufficient to cause an eternal compile time:
 
@@ -127,9 +129,9 @@ class Program {
 
 It might seem simple to drastically improve Roslyn's compile time on this example,
 but regardless of what clever optimizations are added to Roslyn's overload resolution algorithm,
-if P≠NP, there are always examples that cause an exponential runtime of the type checker!
+if P≠NP, there are always examples that cause an exponential runtime of the type-checker!
 
-## C# can be used to prove that a Turing Machine halts
+## With C# One Can Prove that a Turing Machine Halts
 
 C# generics are always fun to play with. They provide a very constrained macro system
 that allows to describe rules that expand and, using extension methods, collapse types.
@@ -138,15 +140,14 @@ Together, they can be used to derive words from context sensitive grammars step 
 As the execution of a turing machine on an empty tape can be encoded as a derivation of a context sensitive grammar,
 it is no wonder that we can design an API in C# that can only be called when the user proves that the given turing machine halts.
 This, however, merely stresses the compiler but much more the programmar. We will see later how we can use that against the compiler!
-It also shows that it is undecidable whether a given C# interface can be implemented typesafely (ignoring `null` values and explicit type casts)!
-This is undecidable, even though the only requirement is a typesafe but otherwise arbitrary implementation!
+It also shows that it is undecidable whether a given C# interface can be implemented type-safely (ignoring `null` values and explicit type casts)!
+This is undecidable, even though the only requirement is a type-safe but otherwise arbitrary implementation!
 
-If you forgot what turing machines are, I don't blame you, they are rarely ever used
-and in general not useful for anything pratical. You can find a
+If you forgot what turing machines are, you can find a
 [refresher here](https://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/turing-machine/one.html)
 and a really nice [playground here](http://turingmachine.io/).
 
-Lets have look at how turing machines can be encoded in C#.
+Lets have a look at how turing machines can be encoded in C#. You can find the full code [here](https://github.com/hediet/blog/blob/d85bf8950a3468fe9fb2e4b2e67388c352d9410c/content/posts/2019/10/how-to-stress-the-csharp-compiler/csharp-demo3.cs).
 
 ```cs
 using Internal;
@@ -173,10 +174,11 @@ a stack having `Sym1` as topmost symbol and `EmptyStack` as the rest.
     public class EmptyStack : Stack<Sym1, EmptyStack> {}
 ```
 
-`Sym1` and `Sym2` represent the tape alphabet, in this case consisting of 2 symbols.
+`Sym1` and `Sym2` represent the tape alphabet, in this case consisting of two symbols.
 
 ```cs
-    public class Sym1 {} public class Sym2 {}
+    public class Sym1 {}
+    public class Sym2 {}
 ```
 
 Now we declare the states of our turing machine.
@@ -190,8 +192,10 @@ Every machine using |S| symbols and |Q| states that
 still doesn't halt after 107 steps will never do so.
 
 ```cs
-    public class State1 {} public class State2 {}
-    public class State3 {} public class State4 {}
+    public class State1 {}
+    public class State2 {}
+    public class State3 {}
+    public class State4 {}
 
     // These classes can only be constructed within this assembly,
     // as their constructor is internal.
@@ -238,10 +242,11 @@ step semantics of the 4-state busy beaver turing machine on a tape with 2 symbol
 Each method represents a rule that matches against a machine configuration
 and returns the next configuration.
 For example, if we would like to remove an item from a stack,
-we match against the type `Stack<TSymbol, TRest>` with TSymbol and TRest
-being arbitrary types that are inferred by the C# type checker and return `TRest`.
+we match against the type `Stack<TSymbol, TRest>` with `TSymbol` and `TRest`
+being arbitrary types that are inferred by the C# type-checker and return `TRest`.
 
 I generated the following rules from a more readable representation of the turing machine.
+You can find the code of the generator [here](https://github.com/hediet/blog/blob/d85bf8950a3468fe9fb2e4b2e67388c352d9410c/content/posts/2019/10/how-to-stress-the-csharp-compiler/script.ts).
 
 ```cs
     public static class BusyBeaver4State2Symbols {
@@ -268,7 +273,7 @@ I generated the following rules from a more readable representation of the turin
 
 ```
 
-And here it is: The proof that our turing machine halts!
+And here it is: The proof that the busy beaver halts!
 
 ```cs
 class Program : IChallenge {
@@ -277,7 +282,7 @@ class Program : IChallenge {
     }
 
     public FinalConfig Run(InitialConfig c) {
-        // The Busy Beaver TM with 4 states and 2 symbol takes 107 steps to halt.
+        // The Busy Beaver TM with 4 states and 2 symbols takes 107 steps to halt.
         return c.Step().Step().Step().Step().Step().Step().Step().Step().Step().Step()
             .Step().Step().Step().Step().Step().Step().Step().Step().Step().Step()
             .Step().Step().Step().Step().Step().Step().Step().Step().Step().Step()
@@ -302,11 +307,12 @@ This is NP-hard by definition!
 
 Note that this construction does not show that C#'s type system is turing complete!
 It would be turing complete though, if, given a program P, `P: string = a + b + c`,
-the type checker had to decide whether a `k: int` exists such that `P' := a + b^k + c` is type correct.
+the type-checker had to decide whether a `k: int` exists such that `P' := a + b^k + c` is type correct.
+Without turing completeness, this idea cannot be used to force the compiler into an infinite loop.
 
 ## Generic type instantiations can grow exponentially fast
 
-We can also use generics to instantiate a very, very large type without much code:
+But we can also use generics to instantiate a very, very large type without much code:
 
 ```cs
 using System;
@@ -335,7 +341,7 @@ However, if Roslyn would share type instantiations and not copy them for every i
 (at least I guess this is what Roslyn is doing),
 the last example could be checked in linear time.
 
-## A Parser that does Backtracking
+## A Parser that does Backtracking?
 
 I couldn't figure out how to crash Roslyn with this one, but maybe you can.
 Given this piece of code, what would you expect from the compiler?
@@ -353,7 +359,7 @@ class Program {
 }
 ```
 
-The type checker will reject it, since `x` and `y` are used as types, but they aren't!
+The type-checker will reject it, since `x` and `y` are used as types, but they aren't!
 
 If the code is formatted differently, the problem becomes clear:
 
