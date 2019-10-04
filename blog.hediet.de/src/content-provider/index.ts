@@ -165,10 +165,10 @@ function titleToId(title: string): string {
 
 function parseMarkdownPost(markdownFile: string): Post {
     const markdown = readFileSync(markdownFile, { encoding: "utf8" });
-    const { content, date, title, meta } = markdownStringToContent(markdown, {
+    let { id, content, date, title, meta } = markdownStringToContent(markdown, {
         basedir: dirname(markdownFile)
     });
-    const id = titleToId(title);
+    id = id || titleToId(title);
 
     return {
         createPage: baseData =>

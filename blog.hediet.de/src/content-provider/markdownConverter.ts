@@ -18,6 +18,7 @@ export function markdownStringToContent(
     content: Content;
     date: Date;
     title: string;
+    id?: string;
     meta: Record<string, unknown>;
 } {
     const remark = remarkAbstract();
@@ -26,6 +27,7 @@ export function markdownStringToContent(
         basedir: context.basedir,
         date: undefined,
         title: undefined,
+        id: undefined,
         meta: {}
     };
     const content = markdownToContent(ast, c2);
@@ -33,7 +35,8 @@ export function markdownStringToContent(
         content,
         date: c2.date!,
         title: c2.title!,
-        meta: c2.meta
+        meta: c2.meta,
+        id: c2.id
     };
 }
 
@@ -41,6 +44,7 @@ interface MarkdownContext2 extends MarkdownContext {
     title: string | undefined;
     date: Date | undefined;
     meta: Record<string, unknown>;
+    id?: string;
 }
 
 type Narrow<T extends { type: string }, TId> = T extends { type: TId }
@@ -116,12 +120,16 @@ function markdownToContent(
             const doc = yaml.load(item.value) as {
                 title: string;
                 date: string;
+                id?: string;
             };
             if (doc.title) {
                 context.title = doc.title;
             }
             if (doc.date) {
                 context.date = new Date(doc.date);
+            }
+            if (doc.id) {
+                context.id = doc.id;
             }
             Object.assign(context.meta, doc);
             return {
