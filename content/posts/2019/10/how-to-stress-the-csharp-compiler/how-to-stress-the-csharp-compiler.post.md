@@ -131,6 +131,8 @@ It might seem simple to drastically improve Roslyn's compile time on this exampl
 but regardless of what clever optimizations are added to Roslyn's overload resolution algorithm,
 if P≠NP, there are always examples that cause an exponential runtime of the type-checker!
 
+Using the same approach, Eric Lippert already [showed in 2007 that C# is NP-hard](https://blogs.msdn.microsoft.com/ericlippert/2007/03/28/lambda-expressions-vs-anonymous-methods-part-five/).
+
 ## With C# One Can Prove that a Turing Machine Halts
 
 C# generics are always fun to play with. They provide a very constrained macro system
@@ -340,6 +342,9 @@ This will crash the C# compiler due to memory limitations.
 However, if Roslyn would share type instantiations and not copy them for every instantiation
 (at least I guess this is what Roslyn is doing),
 the last example could be checked in linear time.
+
+There are also [other constructions](https://mattwarren.org/2017/11/08/A-DoS-Attack-against-the-C-Compiler/) exploiting generic types
+to force exponentially long compile times. They even generate exponentially large binaries.
 
 ## A Parser that does Backtracking?
 
